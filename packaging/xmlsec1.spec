@@ -1,7 +1,8 @@
+#sbs-git:slp/pkgs/x/xmlsec1 xmlsec1 1.2.14 bd7cd922035219f41232d25d9eaf5a2894474165
 
 Name:       xmlsec1
 Summary:    Library providing support for "XML Signature" and "XML Encryption" standards
-Version:    1.2.14
+Version: 1.2.14
 Release:    1
 Group:      System/Libraries
 License:    MIT
