@@ -76,10 +76,10 @@ make %{?_smp_mflags}
 
 %files devel
 %doc Copyright
-%{_includedir}/*.h
+%{_includedir}/xmlsec1
 %{_bindir}/xmlsec1-config
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/*
 %{_libdir}/xmlsec1Conf.sh
-/usr/share/aclocal/xmlsec1.m4
+%{_datadir}/aclocal/xmlsec1.m4
 
