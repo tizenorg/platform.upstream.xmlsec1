@@ -16,12 +16,19 @@ This C library allows to transform XML files into other XML files
 mechanism. To use it you need to have a version of libxml2 >= 2.6.27
 installed. The xsltproc command is a command line interface to the XSLT engine
 
-%package openssl
-Summary:        OpenSSL crypto plugin for XML Security Library
+%package gcrypt
+Summary:        Gcrypt crypto plugin for XML Security Library
 Group:          System/Libraries
 Requires:       %{name} = %{version}
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
+
+%description gcrypt
+OpenSSL plugin for XML Security Library provides OpenSSL based crypto services
+for the xmlsec library.
+
+%package openssl
+Summary:        Gcrypt crypto plugin for XML Security Library
+Group:          System/Libraries
+Requires:       %{name} = %{version}
 
 %description openssl
 OpenSSL plugin for XML Security Library provides OpenSSL based crypto services
@@ -56,6 +63,9 @@ make %{?_smp_mflags}
 
 %postun -p /sbin/ldconfig
 
+%post gcrypt -p /sbin/ldconfig
+
+%postun gcrypt -p /sbin/ldconfig
 
 
 %post openssl -p /sbin/ldconfig
@@ -63,13 +73,16 @@ make %{?_smp_mflags}
 %postun openssl -p /sbin/ldconfig
 
 
-
+%docs_package
 
 %files
 %doc Copyright
 %{_libdir}/libxmlsec1.so.*
-/usr/bin/xmlsec1
+%{_bindir}/xmlsec1
 
+
+%files gcrypt
+%{_libdir}/libxmlsec1-gcrypt.so.*
 
 %files openssl
 %{_libdir}/libxmlsec1-openssl.so.*
