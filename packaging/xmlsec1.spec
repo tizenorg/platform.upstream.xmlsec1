@@ -84,7 +84,7 @@ make %{?_smp_mflags}
 
 
 %files gcrypt
-%{_libdir}/libxmlsec1-gcrypt.so.*
+#%{_libdir}/libxmlsec1-gcrypt.so.*
 
 %files openssl
 %{_libdir}/libxmlsec1-openssl.so.*
