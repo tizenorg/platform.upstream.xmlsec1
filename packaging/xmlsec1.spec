@@ -59,6 +59,9 @@ make %{?_smp_mflags}
 %install
 %make_install
 
+
+%remove_docs
+
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
@@ -73,7 +76,6 @@ make %{?_smp_mflags}
 %postun openssl -p /sbin/ldconfig
 
 
-%docs_package
 
 %files
 %doc Copyright
