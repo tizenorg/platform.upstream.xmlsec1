@@ -1,5 +1,5 @@
 Name:           xmlsec1
-Version:        1.2.18
+Version:        1.2.14
 Release:        1
 License:        MIT
 Summary:        Library providing support for "XML Signature" and "XML Encryption" standards
