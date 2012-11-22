@@ -40,13 +40,6 @@ docs-format:
 	    fi; \
 	    mv $$i.tmp $$i; \
 	done)
-	@(echo "Cleaning html documents"; \
-	for i in `find . -name "*.html" -print`; \
-	do \
-	    echo Cleaning $$i ; \
-	    sed 's/\xA0/ /g' $$i > $$i.tmp ; \
-	    mv $$i.tmp $$i ; \
-	done)
 
 dist-hook:
 	@$(CP) -p $(srcdir)/*.html $(distdir)

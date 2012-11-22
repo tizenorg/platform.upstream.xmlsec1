@@ -19,9 +19,7 @@ cd xmlsec
 find . -name ".git" | xargs rm -r
 
 ./autogen.sh --prefix=/usr --sysconfdir=/etc
-make tar-release
-# can't build rpm on ubuntu
-# make rpm-release
+make rpm-release
 
 tar_file=`ls xmlsec*.tar.gz`
 echo "Moving sources tar file to $rpm_root/SOURCES/$tar_file"
