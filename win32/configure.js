@@ -45,10 +45,9 @@ var withNss = 0;
 var withMSCrypto = 0;
 var withLibXSLT = 1;
 var withIconv = 1;
-var withNT4 = 1;
+var withNT4 = 0;
 
 /* Win32 build options. */
-var buildUnicode = 1;
 var buildDebug = 0;
 var buildStatic = 1;
 var buildWithDLSupport = 1;
@@ -103,7 +102,6 @@ function usage()
  	txt += "  iconv:      Use the iconv library (" + (withIconv? "yes" : "no")  + ")\n";	
  	txt += "  nt4:        Enable NT 4.0 support (" + (withNT4? "yes" : "no")  + ")\n";	
 	txt += "\nWin32 build options, default value given in parentheses:\n\n";
-	txt += "  unicode:    Build Unicode version (" + (buildUnicode? "yes" : "no")  + ")\n";
 	txt += "  debug:      Build unoptimised debug executables (" + (buildDebug? "yes" : "no")  + ")\n";
 	txt += "  static:     Link libxmlsec statically to xmlsec (" + (buildStatic? "yes" : "no")  + ")\n";
 	txt += "  with-dl:    Enable dynamic loading of xmlsec-crypto libraries (" + (buildWithDLSupport? "yes" : "no")  + ")\n";
@@ -159,13 +157,12 @@ function discoverVersion()
 	vf.WriteLine("WITH_CRYPTO=" + withCrypto);	
 	vf.WriteLine("WITH_DEFAULT_CRYPTO=" + withDefaultCrypto);	
 	vf.WriteLine("WITH_OPENSSL=" + withOpenSSL);	
-	vf.WriteLine("WITH_OPENSSL_VERSION=XMLSEC_OPENSSL_" + withOpenSSLVersion);	
+	vf.WriteLine("WITH_OPENSSL_VERSION=" + withOpenSSLVersion);	
 	vf.WriteLine("WITH_NSS=" + withNss);	
 	vf.WriteLine("WITH_MSCRYPTO=" + withMSCrypto);	
 	vf.WriteLine("WITH_LIBXSLT=" + (withLibXSLT ? "1" : "0"));
 	vf.WriteLine("WITH_ICONV=" + (withIconv ? "1" : "0"));
 	vf.WriteLine("WITH_NT4=" + (withNT4 ? "1" : "0"));
-	vf.WriteLine("UNICODE=" + (buildUnicode? "1" : "0"));
 	vf.WriteLine("DEBUG=" + (buildDebug? "1" : "0"));
 	vf.WriteLine("STATIC=" + (buildStatic? "1" : "0"));
 	vf.WriteLine("WITH_DL=" + (buildWithDLSupport ? "1" : "0"));
@@ -257,8 +254,6 @@ for (i = 0; (i < WScript.Arguments.length) && (error == 0); i++) {
 			withIconv = strToBool(arg.substring(opt.length + 1, arg.length));
 		else if (opt == "nt4")
 			withNT4 = strToBool(arg.substring(opt.length + 1, arg.length));
-		else if (opt == "unicode")
-			buildUnicode = strToBool(arg.substring(opt.length + 1, arg.length));
 		else if (opt == "debug")
 			buildDebug = strToBool(arg.substring(opt.length + 1, arg.length));
 		else if (opt == "static")
@@ -311,19 +306,19 @@ for (j = 0; j < crlist.length; j++) {
 	if (crlist[j] == "openssl") {
 		curcrypto="openssl";
 		withOpenSSL = 1;
-		withOpenSSLVersion = "098"; /* default */
+		withOpenSSLVersion = "XMLSEC_OPENSSL_098"; /* default */
 	} else if (crlist[j] == "openssl=096") {
 		curcrypto="openssl";
 		withOpenSSL = 1;
-		withOpenSSLVersion = "096";
+		withOpenSSLVersion = "XMLSEC_OPENSSL_096";
 	} else if (crlist[j] == "openssl=097") {
 		curcrypto="openssl";
 		withOpenSSL = 1;
-		withOpenSSLVersion = "097";
+		withOpenSSLVersion = "XMLSEC_OPENSSL_097";
 	} else if (crlist[j] == "openssl=098") {
 		curcrypto="openssl";
 		withOpenSSL = 1;
-		withOpenSSLVersion = "098";
+		withOpenSSLVersion = "XMLSEC_OPENSSL_098";
 	} else if (crlist[j] == "nss") {
 		curcrypto="nss";
 		withNss = 1;
@@ -369,8 +364,8 @@ var txtOut = "\nXMLSEC configuration\n";
 txtOut += "----------------------------\n";
 txtOut += "         Use Crypto: " + withCrypto + "\n";
 txtOut += " Use Default Crypto: " + withDefaultCrypto + "\n";
-txtOut += "        Use OpenSSL: " + boolToStr(withOpenSSL) + "\n";
-txtOut += "Use OpenSSL Version: " + withOpenSSLVersion + "\n";
+txtOut += "       Use OpenSSL: " + boolToStr(withOpenSSL) + "\n";
+txtOut += "Use OpenSSL Version: " + boolToStr(withOpenSSLVersion) + "\n";
 txtOut += "            Use NSS: " + boolToStr(withNss) + "\n";
 txtOut += "       Use MSCrypto: " + boolToStr(withMSCrypto) + "\n";
 txtOut += "        Use LibXSLT: " + boolToStr(withLibXSLT) + "\n";
@@ -379,7 +374,6 @@ txtOut += "     NT 4.0 support: " + boolToStr(withNT4) + "\n";
 txtOut += "\n";
 txtOut += "Win32 build configuration\n";
 txtOut += "-------------------------\n";
-txtOut += "           Unicode: " + boolToStr(buildUnicode) + "\n";
 txtOut += "     Debug symbols: " + boolToStr(buildDebug) + "\n";
 txtOut += "     Static xmlsec: " + boolToStr(buildStatic) + "\n";
 txtOut += "  Enable DL suport: " + boolToStr(buildWithDLSupport) + "\n";

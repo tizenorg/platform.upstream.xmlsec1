@@ -24,15 +24,7 @@ libxmlsec1_gnutls_la_SOURCES =\
 	crypto.c \
 	digests.c \
 	hmac.c \
-	kw_aes.c \
-	kw_des.c \
 	symkeys.c \
-	asymkeys.c \
-	signatures.c \
-	x509utils.h \
-	x509utils.c \
-	x509.c \
-	x509vfy.c \
 	globals.h \
 	$(NULL)
 
@@ -40,13 +32,11 @@ if SHAREDLIB_HACK
 libxmlsec1_gnutls_la_SOURCES += ../strings.c
 endif
 
-# xmlsec-gnutls library requires xmlsec-gcrypt
 libxmlsec1_gnutls_la_LIBADD = \
+	../libxmlsec1.la \
 	$(GNUTLS_LIBS) \
 	$(LIBXSLT_LIBS) \
 	$(LIBXML_LIBS) \
-	../libxmlsec1.la \
-	../gcrypt/libxmlsec1-gcrypt.la \
 	$(NULL)
 
 libxmlsec1_gnutls_la_DEPENDENCIES = \
