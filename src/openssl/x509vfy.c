@@ -310,7 +310,6 @@ xmlSecOpenSSLX509StoreVerify(xmlSecKeyDataStorePtr store, XMLSEC_STACK_OF_X509* 
 	    X509_VERIFY_PARAM_set_flags(vpm, vpm_flags);
 #endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
     
-
 	    X509_STORE_CTX_init (&xsc, ctx->xst, cert, certs2);
 
 	    if(keyInfoCtx->certsVerificationTime > 0) {	
@@ -325,14 +324,17 @@ xmlSecOpenSSLX509StoreVerify(xmlSecKeyDataStorePtr store, XMLSEC_STACK_OF_X509* 
 	    X509_STORE_CTX_set0_param(&xsc, vpm);	    
 #endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
 
-	    
 	    ret 	= X509_verify_cert(&xsc); 
 	    err_cert 	= X509_STORE_CTX_get_current_cert(&xsc);
 	    err	 	= X509_STORE_CTX_get_error(&xsc);
 	    depth	= X509_STORE_CTX_get_error_depth(&xsc);
-	    
-	    X509_STORE_CTX_cleanup (&xsc);  
-	    
+        X509_STORE_CTX_cleanup (&xsc);
+
+        if(ret != 1 && keyInfoCtx->flags & XMLSEC_KEYINFO_FLAGS_ALLOW_BROKEN_CHAIN){
+            ret = 1;
+            keyInfoCtx->flags2 |= XMLSEC_KEYINFO_ERROR_FLAGS_BROKEN_CHAIN;
+        }
+
 	    if(ret == 1) {
 		res = cert;
 		goto done;
