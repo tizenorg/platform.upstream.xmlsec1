@@ -1,0 +1,3 @@
+version=2
+http://www.aleksey.com/xmlsec/download/xmlsec1-([\d\.]+)\.tar\.gz \
+    debian uupdate

@@ -1,0 +1,187 @@
+xmlsec1 (1.2.14-1slp2+s4) unstable; urgency=low
+
+  * Debianized.
+
+  * Git : 165.213.180.234:slp/pkgs/x/xmlsec1
+  * Tag : xmlsec1_1.2.14-1slp2+s4
+
+ -- Bartek <b.grzelewski@samsung.com>  Mon, 20 Jun 2011 15:26:37 +0100
+
+xmlsec1 (1.2.14-1slp2+s3) unstable; urgency=low
+
+  * Add flags to keyinfo.h:
+    * XMLSEC_KEYINFO_FLAGS_ALLOW_BROKEN_CHAIN
+    * XMLSEC_KEYINFO_ERROR_FLAGS_BROKEN_CHAIN
+
+ -- Bartlomiej Grzelewski <b.grzelewski@samsung.com>  Fri, 17 Jun 2010 15:01:10 +0100
+
+xmlsec1 (1.2.14-1slp2+s2) unstable; urgency=low
+
+  * Remove escape characters from *.pc.in files.
+
+ -- Bartlomiej Grzelewski <b.grzelewski@samsung.com>  Wed, 12 Jan 2010 11:59:41 +0100
+
+xmlsec1 (1.2.14-1slp2+s1) unstable; urgency=low
+
+  * Remove xmlsec1 command line tool.
+  * Remove libxmlsec1-nss library.
+  * Remove libxmlsec1-gnutls library.
+
+ -- Bartlomiej Grzelewski <b.grzelewski@samsung.com>  Wed, 29 Dec 2010 12:31:26 +0100
+
+xmlsec1 (1.2.14-1) unstable; urgency=low
+
+  * New upstream release, fixes CVE-2009-3736 (Closes: #559831)
+  * debian/rules: dh_prep instead of dh_clean
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Tue, 08 Dec 2009 21:47:36 -0500
+
+xmlsec1 (1.2.12-1) unstable; urgency=low
+
+  * New upstream release, fixes CVE-2009-0217 (Closes: #532751, #529918)
+  * Update debian/watch
+  * Upgrade to latest debhelper version
+  * In debian/control:
+    * add Homepage
+    * remove use of ${Source-Version}
+  * In debian/rules:
+    * fix distclean call
+    * $(CURDIR) instead of $(PWD)
+    * remove xulrunner hack since upstream now supports it in configure
+    * strip RPATH's caused by bug in upstream's libtool version
+  * Confirm Debian standards 3.8.3
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Sat, 05 Sep 2009 18:21:58 -0400
+
+xmlsec1 (1.2.9-5) unstable; urgency=low
+
+  * Remove shlibs.local (Closes: #379445)
+  * Add minimum versions to Build-Depends and -dev Depends
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Sun, 30 Jul 2006 22:27:01 -0400
+
+xmlsec1 (1.2.9-4) unstable; urgency=low
+
+  * Fix gnutls dependency in shlibs.local (Closes: #379390)
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Sun, 23 Jul 2006 10:46:53 -0400
+
+xmlsec1 (1.2.9-3) unstable; urgency=low
+
+  * Adjust gnutls dependency (Closes: #335771)
+  * Adjust libxml2 min version
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Mon, 26 Jun 2006 20:48:41 -0400
+
+xmlsec1 (1.2.9-2) unstable; urgency=low
+
+  * Add engine libraries to depends of dev package
+  * Switch to mozilla libs provided by xulrunner package (Closes: #364382)
+  * Confirm Debian standards 3.7.2
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Thu, 08 Jun 2006 21:52:55 -0400
+
+xmlsec1 (1.2.9-1) unstable; urgency=low
+
+  * New upstream release (Closes: #319807)
+  * Upgrade to Debian standards 3.6.2
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Sat, 17 Sep 2005 09:36:11 -0400
+
+xmlsec1 (1.2.6-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Thu, 26 Aug 2004 15:07:52 -0400
+
+xmlsec1 (1.2.4-3) unstable; urgency=low
+
+  * Adjust gnutls dependency (Closes: #263626)
+  * Add debian/watch
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Thu, 5 Aug 2004 12:09:42 -0400
+
+xmlsec1 (1.2.4-2) unstable; urgency=low
+
+  * Change maintainer address
+  * Adjust libxslt dependency (Closes: #261831)
+
+ -- John V. Belmonte <jbelmonte@debian.org>  Mon, 2 Aug 2004 10:05:04 -0400
+
+xmlsec1 (1.2.4-1) unstable; urgency=low
+
+  * New upstream release (Closes: #228531)
+  * Add binary for nss crypto engine
+  * Upgrade gnutls dependency to gnutls10
+
+ -- John V. Belmonte <jvb@prairienet.org>  Tue, 27 Jan 2004 12:49:49 -0500
+
+xmlsec1 (1.1.1-2) unstable; urgency=low
+
+  * Upgrade to Debian standards 3.6.1
+  * In debian/rules:
+    * remove unused "nostrip" logic
+    * replace use of $CURDIR with `pwd`
+    * remove unused debhelper calls
+    * convert from dh_movefiles to dh_install
+    * omit makefiles and SGML files from HTML docs
+
+ -- John V. Belmonte <jvb@prairienet.org>  Mon, 13 Oct 2003 15:43:41 -0400
+
+xmlsec1 (1.1.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Add soname number to build/-dev depends for libgnutls
+  * Add version to build/-dev depends for libssl since no
+    libssl<soname_number>-dev is available
+  * In README.Debian, clarify restriction on use of openssl crypto engine
+    by GPL'd official Debian packages
+  * In README.Debian, more about the yet unpackaged nss crypto engine
+
+ -- John V. Belmonte <jvb@prairienet.org>  Sun, 24 Aug 2003 06:39:56 -0400
+
+xmlsec1 (1.1.0-1) unstable; urgency=low
+
+  * New upstream release
+  * Add pkg-config files (Closes: #203376)
+  * Downplay xmlsec1-config in README.Debian, package descriptions
+  * Remove some upstream workarounds from debian/rules
+
+ -- John V. Belmonte <jvb@prairienet.org>  Mon, 11 Aug 2003 10:05:06 -0400
+
+xmlsec1 (1.0.4-2) unstable; urgency=low
+
+  * No change, except this time my sponsor won't accidentally mutilate the
+    package before uploading :-)
+
+ -- John V. Belmonte <jvb@prairienet.org>  Fri, 18 Jul 2003 01:11:45 -0400
+
+xmlsec1 (1.0.4-1) unstable; urgency=low
+
+  * New upstream release
+  * Update README.Debian regarding nss engine support
+  * Fix typo in libxmlsec1 description
+  * Remove some upstream workarounds from debian/rules
+
+ -- John V. Belmonte <jvb@prairienet.org>  Tue, 15 Jul 2003 21:23:11 -0400
+
+xmlsec1 (1.0.3-1) unstable; urgency=low
+
+  * New upstream release (Closes: #194270)
+  * change source name for xmlsec1 series
+  * change dev package section to libdevel
+
+ -- John V. Belmonte <jvb@prairienet.org>  Tue, 17 Jun 2003 23:19:17 -0400
+
+xmlsec (0.0.14-1) unstable; urgency=low
+
+  * New upstream release
+  * upgrade to Debian standards 3.5.9
+
+ -- John V. Belmonte <jvb@prairienet.org>  Fri, 28 Mar 2003 14:21:10 -0500
+
+xmlsec (0.0.12-1) unstable; urgency=low
+
+  * Initial Release (Closes: #152605)
+
+ -- John V. Belmonte <jvb@prairienet.org>  Tue, 11 Feb 2003 14:58:00 -0500
