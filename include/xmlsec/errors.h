@@ -403,7 +403,6 @@ XMLSEC_EXPORT void 		xmlSecErrorsDefaultCallbackEnableOutput
 XMLSEC_EXPORT int 		xmlSecErrorsGetCode		(xmlSecSize pos);
 XMLSEC_EXPORT const char* 	xmlSecErrorsGetMsg		(xmlSecSize pos);
 
-XMLSEC_EXPORT void xmlSecPrintLogMsg(const char* msg);
 
 
 /* __FUNCTION__ is defined for MSC compiler < MS VS .NET 2003 */

@@ -240,11 +240,6 @@ struct _xmlSecDSigReferenceCtx {
     void*			reserved0;
     void*			reserved1;    
 };
-typedef struct HashUriList_struct
-{
-	struct HashUriList_struct * pNext; 
-	char* uri;	
-}HashUriList;
 
 XMLSEC_EXPORT xmlSecDSigReferenceCtxPtr	xmlSecDSigReferenceCtxCreate(xmlSecDSigCtxPtr dsigCtx,
 								xmlSecDSigReferenceOrigin origin);
@@ -261,12 +256,6 @@ XMLSEC_EXPORT void		xmlSecDSigReferenceCtxDebugDump	(xmlSecDSigReferenceCtxPtr d
 								 FILE* output);
 XMLSEC_EXPORT void		xmlSecDSigReferenceCtxDebugXmlDump(xmlSecDSigReferenceCtxPtr dsigRefCtx,
 								 FILE* output);
-
-
-
-XMLSEC_EXPORT void xmlSecDSigSetNoHash(int hash);
-XMLSEC_EXPORT void xmlSecDSigSetPartialHash(HashUriList* uriList);
-void freePartialHash(HashUriList* uriList); 
 
 /**************************************************************************
  *

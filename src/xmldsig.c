@@ -49,10 +49,6 @@ static int	xmlSecDSigCtxProcessManifestNode	(xmlSecDSigCtxPtr dsigCtx,
 
 /* The ID attribute in XMLDSig is 'Id' */
 static const xmlChar*		xmlSecDSigIds[] = { xmlSecAttrId, NULL };
-static int gNoHash = 0;
-static int gPartial = 0;
-static HashUriList* gpList = NULL;
-static char logChar[100] = "\0";
 
 /**
  * xmlSecDSigCtxCreate:
@@ -291,10 +287,6 @@ int
 xmlSecDSigCtxSign(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr tmpl) {
     int ret;
     
-	xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxSign start >>");
-	
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(dsigCtx->result == NULL, -1);
     xmlSecAssert2(tmpl != NULL, -1);
@@ -358,11 +350,7 @@ xmlSecDSigCtxSign(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr tmpl) {
 int 
 xmlSecDSigCtxVerify(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     int ret;
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		   NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			  "xmlSecDSigCtxVerify start >>");
-		   
+    
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(node != NULL, -1);
     xmlSecAssert2(node->doc != NULL, -1);
@@ -380,12 +368,6 @@ xmlSecDSigCtxVerify(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 		    "xmlSecDSigCtxSigantureProcessNode",
 		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
 		    XMLSEC_ERRORS_NO_MESSAGE);
-
-		xmlSecError(XMLSEC_ERRORS_HERE,
-		   NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			  "xmlSecDSigCtxProcessSignatureNode false >>");
-
-	
 	return(-1);
     }
     xmlSecAssert2(dsigCtx->signMethod != NULL, -1);
@@ -405,11 +387,6 @@ xmlSecDSigCtxVerify(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 		    "xmlSecTransformVerifyNodeContent",
 		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
 		    XMLSEC_ERRORS_NO_MESSAGE);
-
-		xmlSecError(XMLSEC_ERRORS_HERE,
-		   NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			  "xmlSecTransformVerifyNodeContent false >>");
-			
 	return(-1);
     }
     
@@ -479,10 +456,6 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     xmlNodePtr keyInfoNode = NULL;
     xmlNodePtr cur;
     int ret;
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"xmlSecDSigCtxProcessSignatureNode : start >>>>>>>");
     
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2((dsigCtx->operation == xmlSecTransformOperationSign) || (dsigCtx->operation == xmlSecTransformOperationVerify), -1);
@@ -656,10 +629,6 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 		    XMLSEC_ERRORS_NO_MESSAGE);
 	return(-1);
     }
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"xmlSecDSigCtxProcessSignatureNode : end >>>>>>>");
     return(0);
 }
 
@@ -702,11 +671,7 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     xmlSecDSigReferenceCtxPtr dsigRefCtx;
     xmlNodePtr cur;
     int ret;
- 	
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessSignedInfoNode start >>");
-	
+    
     xmlSecAssert2(dsigCtx != NULL, -1);	
     xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
     xmlSecAssert2(dsigCtx->signMethod == NULL, -1);
@@ -833,41 +798,16 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 	    return(-1);	    
 	}
 
-	if( gNoHash == 1)
-		xmlSecError(XMLSEC_ERRORS_HERE,
-					NULL, NULL,	XMLSEC_ERRORS_MAX_NUMBER,
-					"xmlSecDSigCtxProcessSignedInfoNode :  NoHash :: skip start >>>>>>");
-	
-		/* process */
-		ret = xmlSecDSigReferenceCtxProcessNode(dsigRefCtx, cur);
-		if(ret < 0) {
-		    xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL,
-				"xmlSecDSigReferenceCtxProcessNode",
-				XMLSEC_ERRORS_R_XMLSEC_FAILED,
-				"node=%s",
-				xmlSecErrorsSafeString(xmlSecNodeGetName(cur)));
-
-			if( gNoHash == 1)
-			{
-				xmlSecError(XMLSEC_ERRORS_HERE,
-							NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-							"xmlSecDSigReferenceCtxProcessNode :  ignore false >>>>>>");
-
-				//return(-1);	 
-			}
-			else
-		   		return(-1);	    
-		}
-
-
-	if( gNoHash == 1)
-	{
-		xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL, NULL,	XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessSignedInfoNode :  NoHash :: skip end >>>>>>");
-
-		dsigRefCtx->status = xmlSecDSigStatusSucceeded;
+	/* process */
+	ret = xmlSecDSigReferenceCtxProcessNode(dsigRefCtx, cur);
+	if(ret < 0) {
+	    xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL,
+			"xmlSecDSigReferenceCtxProcessNode",
+			XMLSEC_ERRORS_R_XMLSEC_FAILED,
+			"node=%s",
+			xmlSecErrorsSafeString(xmlSecNodeGetName(cur)));
+	    return(-1);	    
 	}
 
 	/* bail out if next Reference processing failed */
@@ -875,21 +815,18 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 	    dsigCtx->status = xmlSecDSigStatusInvalid;
 	    return(0); 
 	}
-
 	cur = xmlSecGetNextElementNode(cur->next);
     }
 
-	
     /* check that we have at least one Reference */
     if(xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences)) == 0) {
-		xmlSecError(XMLSEC_ERRORS_HERE,
-		    	NULL,
-			    NULL,
-			    XMLSEC_ERRORS_R_DSIG_NO_REFERENCES,
-			    XMLSEC_ERRORS_NO_MESSAGE);
-			return(-1);
-   }
-	
+    	xmlSecError(XMLSEC_ERRORS_HERE,
+		    NULL,
+		    NULL,
+		    XMLSEC_ERRORS_R_DSIG_NO_REFERENCES,
+		    XMLSEC_ERRORS_NO_MESSAGE);
+	return(-1);
+    }
 
     /* if there is something left than it's an error */
     if(cur != NULL) {
@@ -900,21 +837,12 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 		    XMLSEC_ERRORS_NO_MESSAGE);
 	return(-1);
     }
-
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessSignedInfoNode end >>");
-	
     return(0);
 }
 
 static int 
 xmlSecDSigCtxProcessKeyInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     int ret;
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessKeyInfoNode start >>");
     
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(dsigCtx->signMethod != NULL, -1);
@@ -973,9 +901,6 @@ xmlSecDSigCtxProcessKeyInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 	}	
     }
     
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessKeyInfoNode end >>");
     return(0);
 }
 
@@ -1011,11 +936,6 @@ static int
 xmlSecDSigCtxProcessObjectNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     xmlNodePtr cur;
     int ret;
-	
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessObjectNode start >>");
-	*/
 
     xmlSecAssert2(dsigCtx != NULL, -1);	
     xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
@@ -1037,10 +957,6 @@ xmlSecDSigCtxProcessObjectNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 	}
 	cur = xmlSecGetNextElementNode(cur->next);
     }
-	
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessObjectNode end >>");*/
     return(0);
 }
 
@@ -1079,9 +995,6 @@ xmlSecDSigCtxProcessManifestNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     xmlSecDSigReferenceCtxPtr dsigRefCtx;
     xmlNodePtr cur;
     int ret;
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessManifestNode start >>");
 
     xmlSecAssert2(dsigCtx != NULL, -1);	
     xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
@@ -1139,9 +1052,6 @@ xmlSecDSigCtxProcessManifestNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
 		    XMLSEC_ERRORS_NO_MESSAGE);
 	return(-1);
     }    
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigCtxProcessManifestNode end >>");
     return(0);
 }
 
@@ -1340,11 +1250,7 @@ xmlSecDSigReferenceCtxPtr
 xmlSecDSigReferenceCtxCreate(xmlSecDSigCtxPtr dsigCtx, xmlSecDSigReferenceOrigin origin) {
     xmlSecDSigReferenceCtxPtr dsigRefCtx;
     int ret;
-
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigReferenceCtxCreate start >>");
-		*/
+    
     xmlSecAssert2(dsigCtx != NULL, NULL);
     
     dsigRefCtx = (xmlSecDSigReferenceCtxPtr) xmlMalloc(sizeof(xmlSecDSigReferenceCtx));
@@ -1368,11 +1274,6 @@ xmlSecDSigReferenceCtxCreate(xmlSecDSigCtxPtr dsigCtx, xmlSecDSigReferenceOrigin
 	xmlSecDSigReferenceCtxDestroy(dsigRefCtx);
 	return(NULL);   
     }
-
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigReferenceCtxCreate end >>");*/
-		
     return(dsigRefCtx);    
 }
 
@@ -1384,11 +1285,6 @@ xmlSecDSigReferenceCtxCreate(xmlSecDSigCtxPtr dsigCtx, xmlSecDSigReferenceOrigin
  */
 void  
 xmlSecDSigReferenceCtxDestroy(xmlSecDSigReferenceCtxPtr dsigRefCtx) {
-
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigReferenceCtxDestroy start >>");	*/
-
     xmlSecAssert(dsigRefCtx != NULL);
     
     xmlSecDSigReferenceCtxFinalize(dsigRefCtx);
@@ -1411,10 +1307,6 @@ int
 xmlSecDSigReferenceCtxInitialize(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlSecDSigCtxPtr dsigCtx,
 				xmlSecDSigReferenceOrigin origin) {
     int ret;
-
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigReferenceCtxInitialize start >>");	*/
     
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(dsigRefCtx != NULL, -1);
@@ -1465,11 +1357,6 @@ xmlSecDSigReferenceCtxInitialize(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlSecDSi
  */
 void 
 xmlSecDSigReferenceCtxFinalize(xmlSecDSigReferenceCtxPtr dsigRefCtx) {
-
-	/*xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigReferenceCtxFinalize start >>");		*/
-
     xmlSecAssert(dsigRefCtx != NULL);
 
     xmlSecTransformCtxFinalize(&(dsigRefCtx->transformCtx));
@@ -1531,9 +1418,6 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     xmlNodePtr cur;
     int ret;
     
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"xmlSecDSigReferenceCtxProcessNode : start >>>>>>>");
     xmlSecAssert2(dsigRefCtx != NULL, -1);
     xmlSecAssert2(dsigRefCtx->dsigCtx != NULL, -1);
     xmlSecAssert2(dsigRefCtx->digestMethod == NULL, -1);
@@ -1542,16 +1426,8 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     xmlSecAssert2(node != NULL, -1);
     xmlSecAssert2(node->doc != NULL, -1);
 
-	xmlSecError(XMLSEC_ERRORS_HERE,
-					NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-						"		 : skip start  >>>>>");
-
-
-	
     transformCtx = &(dsigRefCtx->transformCtx);
 
-	if( gNoHash != 1)
-	{
     /* read attributes first */
     dsigRefCtx->uri = xmlGetProp(node, xmlSecAttrURI);
     dsigRefCtx->id  = xmlGetProp(node, xmlSecAttrId);
@@ -1672,15 +1548,6 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 	return(-1);
     }
 
-#if 0 
-	}// if( gNoHash == 1)
-	
-	xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"		 : skip end  >>>>>");
-#endif
-
-
     /* if we need to write result to xml node then we need base64 encode result */
     if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {	
 	xmlSecTransformPtr base64Encode;
@@ -1693,12 +1560,7 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 			"xmlSecTransformCtxCreateAndAppend",
 			XMLSEC_ERRORS_R_XMLSEC_FAILED,
 			XMLSEC_ERRORS_NO_MESSAGE);
-			
-			xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-					"xmlSecTransformCtxCreateAndAppend false  >>>>>");
 	    return(-1);
-		
 	}
 	base64Encode->operation = xmlSecTransformOperationEncode;
     }
@@ -1711,30 +1573,11 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 		    "xmlSecTransformCtxExecute",
 	    	    XMLSEC_ERRORS_R_XMLSEC_FAILED,
 		    XMLSEC_ERRORS_NO_MESSAGE);
-	
-	xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-					"     TransformCtxExecute false  return ?? >>>>>");
-	
 	return(-1);
     }    
     dsigRefCtx->result = transformCtx->result;
-	
-	
-#if 0
-	}//	if( gNoHash == 1)
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-	NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"		 : skip end  >>>>>");
-#endif
 
     if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {	
-
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"		 : skip start 2  >>>>>");
-			
 	if((dsigRefCtx->result == NULL) || (xmlSecBufferGetData(dsigRefCtx->result) == NULL)) {
 	    xmlSecError(XMLSEC_ERRORS_HERE,
 			NULL,
@@ -1748,33 +1591,19 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 	xmlNodeSetContentLen(digestValueNode,
 			    xmlSecBufferGetData(dsigRefCtx->result),
 			    xmlSecBufferGetSize(dsigRefCtx->result));
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-					NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-					"		 : skip end 2  >>>>>");
-
+    
 	/* set success status and we are done */
 	dsigRefCtx->status = xmlSecDSigStatusSucceeded;
     } else {
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-					"xmlSecTransformVerifyNodeContent  :: signature start ??? >>");	
-	
-
-		/* verify SignatureValue node content */
-		ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod, 
-				    digestValueNode, transformCtx);
-		if(ret < 0) {
-	    	    xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL,
-				"xmlSecTransformVerifyNodeContent",
-				XMLSEC_ERRORS_R_XMLSEC_FAILED,
-				XMLSEC_ERRORS_NO_MESSAGE);
-
-
-				xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-					"     TransformVerifyNodeContent  :: signature false ??? >>");	
+	/* verify SignatureValue node content */
+	ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod, 
+			    digestValueNode, transformCtx);
+	if(ret < 0) {
+    	    xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL,
+			"xmlSecTransformVerifyNodeContent",
+			XMLSEC_ERRORS_R_XMLSEC_FAILED,
+			XMLSEC_ERRORS_NO_MESSAGE);
 	    return(-1);
 	}
     
@@ -1784,27 +1613,8 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 	} else {
     	    dsigRefCtx->status = xmlSecDSigStatusInvalid;
 	}
-
-
-	
-#if 1
-		}// if( gNoHash == 1)
-	if(dsigRefCtx->digestMethod->status == xmlSecTransformStatusOk) {
-	    dsigRefCtx->status = xmlSecDSigStatusSucceeded;
-
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-		"       :: TransformStatusOk , SigStatusSucceeded >>>>");	
-			
-	} 
-		xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"		 : skip end  >>>>>");
-#endif
-
     }
 
-partialHash:
     return(0);
 }
 
@@ -1952,90 +1762,6 @@ xmlSecDSigReferenceCtxDebugXmlDump(xmlSecDSigReferenceCtxPtr dsigRefCtx, FILE* o
     } else {
 	fprintf(output, "</ReferenceVerificationContext>\n");
     }
-}
-
-
-void xmlSecDSigSetNoHash(int hash)
-{
-	gNoHash = hash;
-	
-	if( gNoHash == 1 )
-		xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"xmlSecDSigSetNoHash >> start");
-	else
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigSetNoHash : 0 ( default)");
-}
-
-void _copyMemory(HashUriList* src, HashUriList* dest)
-{
-	dest= (HashUriList*)malloc(sizeof(HashUriList)); //	gpList 
-
-	HashUriList* pDestTmp = dest;
-	HashUriList* pSrcTmp = src;
-	int len = 0;
-	int cnt = 0;
-	
-	while(pSrcTmp)
-	{
-		len = strlen(pSrcTmp->uri);
-		pDestTmp->uri = (char*)malloc(len+1);
-		memcpy(pDestTmp->uri, pSrcTmp->uri, len);
-		pDestTmp->uri[len] = '\0';		
-		++cnt;
-
-		strcpy(logChar, pDestTmp->uri);
-
-		xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				(const char*)logChar);
-
-		pSrcTmp = pSrcTmp->pNext;
-
-		if(pSrcTmp != NULL)
-		{
-			pDestTmp->pNext = (HashUriList*)malloc(sizeof(HashUriList));	
-			pDestTmp = pDestTmp->pNext;
-		}	
-	}	
-	
-}
-
-void xmlSecDSigSetPartialHash(HashUriList* uriList)
-{
-	xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-				"xmlSecDSigSetPartialHash >> start");
-
-	gPartial = 1;
-	
-	if(uriList != NULL)
-	{
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-			"xmlSecDSigSetPartialHash >> uriList != NULL >>>>");
-
-		gpList = uriList;
-	}
-	
-}
-
-void freePartialHash(HashUriList* uriList)
-{	
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
-		"freePartialHash >> start");
-
-	HashUriList* pTmp = uriList;
-	while(pTmp != NULL)
-	{
-		free(pTmp->uri);
-		pTmp = pTmp->pNext;		
-	}
-	//free(pTmp);
-	//pTmp = NULL;
 }
 
 

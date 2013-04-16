@@ -224,38 +224,12 @@ xmlSecError(const char* file, int line, const char* func,
 	    const char* errorObject, const char* errorSubject,
   	    int reason, const char* msg, ...) {
 	    
-    if(xmlSecErrorsClbk != NULL) 
-	{		
-		if( xmlSecErrorsClbk != xmlSecErrorsDefaultCallback )
-		{
-			const char* error_msg = NULL;
-			xmlSecSize i;
-
-			if(reason != XMLSEC_ERRORS_MAX_NUMBER)	
-			{
-				for(i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i)
-				{
-				    if(xmlSecErrorsGetCode(i) == reason) {
-					error_msg = xmlSecErrorsGetMsg(i);
-					break;
-				    }
-				}
-
-				if(error_msg != NULL)
-					msg = error_msg;
-			}
-
-			if(reason == XMLSEC_ERRORS_MAX_NUMBER)	
-				reason = 0;				
-			
-		xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, msg);
+    if(xmlSecErrorsClbk != NULL) {
+	xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE];
 	
-}
-
-
-	/*
 	if(msg != NULL) {
 	    va_list va;
+
 	    va_start(va, msg);
   	    xmlSecStrVPrintf(error_msg, sizeof(error_msg), BAD_CAST msg, va);
 	    error_msg[sizeof(error_msg) - 1] = '\0';
@@ -263,29 +237,6 @@ xmlSecError(const char* file, int line, const char* func,
 	} else {
 	    error_msg[0] = '\0';	    
 	}
-	xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);*/
+	xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);
     }	
-}
-
-void	
-xmlSecPrintLogMsg(const char* msg)
-{
-
-		 // LOGD("[LOG][%s:L%d]: %s \n", __func__,__LINE__, msg); 
-//		 fprintf(stderr, FMT, ##ARG);
-		// 	fprintf(stderr, "  ## xmlSecPrintLogMsg: %s\n",msg);
-//fprintf(RouterData(theEnv)->FastSaveFilePtr,"%s",str);
-
-	//LOGD("[LOG][%s:L%d]: %s \n", __func__,__LINE__, msg); 
-
-	  
-
-	//LOGD("[LOG][%s:L%d] Enter \n", __func__,__LINE__);
-
-	xmlSecError(XMLSEC_ERRORS_HERE,
-				NULL,
-				NULL,
-				XMLSEC_ERRORS_MAX_NUMBER,
-				msg);
-				
 }
