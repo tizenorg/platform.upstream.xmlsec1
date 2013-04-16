@@ -323,7 +323,10 @@ xmlSecOpenSSLEvpSignatureVerify(xmlSecTransformPtr transform,
 			xmlSecTransformCtxPtr transformCtx) {
     xmlSecOpenSSLEvpSignatureCtxPtr ctx;
     int ret;
-    
+
+	xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
+					"xmlSecOpenSSLEvpSignatureVerify  :: OpenSSL start ??? >>");	
     xmlSecAssert2(xmlSecOpenSSLEvpSignatureCheckId(transform), -1);
     xmlSecAssert2(transform->operation == xmlSecTransformOperationVerify, -1);
     xmlSecAssert2(xmlSecTransformCheckSize(transform, xmlSecOpenSSLEvpSignatureSize), -1);
@@ -341,6 +344,11 @@ xmlSecOpenSSLEvpSignatureVerify(xmlSecTransformPtr transform,
 		    "EVP_VerifyFinal",
 		    XMLSEC_ERRORS_R_CRYPTO_FAILED,
 		    XMLSEC_ERRORS_NO_MESSAGE);
+
+	xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
+					"xmlSecOpenSSLEvpSignatureVerify  :: OpenSSL CRYPTO_FAILED ??? >>");	
+	
 	return(-1);
     } else if(ret != 1) {
 	xmlSecError(XMLSEC_ERRORS_HERE, 
@@ -349,10 +357,19 @@ xmlSecOpenSSLEvpSignatureVerify(xmlSecTransformPtr transform,
 		    XMLSEC_ERRORS_R_DATA_NOT_MATCH,
 		    "signature do not match");
 	transform->status = xmlSecTransformStatusFail;
+
+	xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
+					"xmlSecOpenSSLEvpSignatureVerify  :: OpenSSL DATA_NOT_MATCH ??? >>");	
 	return(0);
     }
         
     transform->status = xmlSecTransformStatusOk;
+
+	xmlSecError(XMLSEC_ERRORS_HERE,
+			NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER,
+					"xmlSecOpenSSLEvpSignatureVerify  :: OpenSSL end OK ??? >>");	
+	
     return(0);
 }
 
