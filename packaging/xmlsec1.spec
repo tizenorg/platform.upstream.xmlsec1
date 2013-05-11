@@ -78,6 +78,7 @@ make %{?_smp_mflags}
 
 
 %files
+%license COPYING
 %doc Copyright
 %{_libdir}/libxmlsec1.so.*
 %{_bindir}/xmlsec1
