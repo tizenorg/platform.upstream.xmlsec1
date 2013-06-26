@@ -243,7 +243,7 @@ xmlSecOpenSSLEvpDigestVerify(xmlSecTransformPtr transform,
                     "data_size=%d;dgst_size=%d",
                     dataSize, ctx->dgstSize);
         transform->status = xmlSecTransformStatusFail;
-        return(0);
+        return -1;
     }
 
     if(memcmp(ctx->dgst, data, ctx->dgstSize) != 0) {
@@ -253,7 +253,7 @@ xmlSecOpenSSLEvpDigestVerify(xmlSecTransformPtr transform,
                     XMLSEC_ERRORS_R_INVALID_DATA,
                     "data and digest do not match");
         transform->status = xmlSecTransformStatusFail;
-        return(0);
+        return -1;
     }
 
     transform->status = xmlSecTransformStatusOk;
