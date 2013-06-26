@@ -49,6 +49,7 @@ static int	xmlSecDSigCtxProcessManifestNode	(xmlSecDSigCtxPtr dsigCtx,
 
 /* The ID attribute in XMLDSig is 'Id' */
 static const xmlChar*		xmlSecDSigIds[] = { xmlSecAttrId, NULL };
+static char logMsg[1024];
 
 /**
  * xmlSecDSigCtxCreate:
@@ -1568,16 +1569,18 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     /* finally get transforms results */
     ret = xmlSecTransformCtxExecute(transformCtx, node->doc);
     if(ret < 0) {
+	sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
+	logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
 	xmlSecError(XMLSEC_ERRORS_HERE,
 		    NULL,
 		    "xmlSecTransformCtxExecute",
-	    	    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
+		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+		    logMsg);
 	return(-1);
     }    
     dsigRefCtx->result = transformCtx->result;
 
-    if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {	
+    if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {
 	if((dsigRefCtx->result == NULL) || (xmlSecBufferGetData(dsigRefCtx->result) == NULL)) {
 	    xmlSecError(XMLSEC_ERRORS_HERE,
 			NULL,
@@ -1599,11 +1602,13 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 	ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod, 
 			    digestValueNode, transformCtx);
 	if(ret < 0) {
-    	    xmlSecError(XMLSEC_ERRORS_HERE,
+		sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
+		logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
+		xmlSecError(XMLSEC_ERRORS_HERE,
 			NULL,
 			"xmlSecTransformVerifyNodeContent",
 			XMLSEC_ERRORS_R_XMLSEC_FAILED,
-			XMLSEC_ERRORS_NO_MESSAGE);
+			logMsg);
 	    return(-1);
 	}
     

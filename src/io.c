@@ -424,9 +424,9 @@ xmlSecTransformInputURIOpen(xmlSecTransformPtr transform, const xmlChar *uri) {
 		    xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
 		    "opencallback",
 		    XMLSEC_ERRORS_R_IO_FAILED,
-		    "uri=%s;errno=%d", 
+		    "uri=%s;error=%s",
 		    xmlSecErrorsSafeString(uri),
-		    errno);
+		    strerror(errno));
 	return(-1);
     }
     
@@ -484,7 +484,7 @@ xmlSecTransformInputURIPopBin(xmlSecTransformPtr transform, xmlSecByte* data,
 			xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
 			"readcallback",
 			XMLSEC_ERRORS_R_IO_FAILED,
-			"errno=%d", errno);
+			"error=%s", strerror(errno));
 	    return(-1);
 	}
 	(*dataSize) = ret;

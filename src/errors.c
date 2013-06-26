@@ -114,6 +114,7 @@ xmlSecErrorsShutdown(void) {
 void 
 xmlSecErrorsSetCallback(xmlSecErrorsCallback callback) {
     xmlSecErrorsClbk = callback;
+    xmlSecErrorsDefaultCallbackEnableOutput(0);
 }
 
 /**
@@ -144,7 +145,7 @@ xmlSecErrorsDefaultCallback(const char* file, int line, const char* func,
 	    }
 	}
 	xmlGenericError(xmlGenericErrorContext,
-	    "func=%s:file=%s:line=%d:obj=%s:subj=%s:error=%d:%s:%s\n",
+	    "func=%s:file=%s:line=%d:obj=%s:subj=%s:error=%d:<%s>:<%s>\n",
 	    (func != NULL) ? func : "unknown",
 	    (file != NULL) ? file : "unknown",
 	    line,
@@ -219,24 +220,39 @@ xmlSecErrorsGetMsg(xmlSecSize pos) {
  * application specific callback installed using #xmlSecErrorsSetCallback 
  * function.
  */
-void	
+void
 xmlSecError(const char* file, int line, const char* func, 
 	    const char* errorObject, const char* errorSubject,
   	    int reason, const char* msg, ...) {
-	    
-    if(xmlSecErrorsClbk != NULL) {
-	xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE];
-	
-	if(msg != NULL) {
-	    va_list va;
 
-	    va_start(va, msg);
-  	    xmlSecStrVPrintf(error_msg, sizeof(error_msg), BAD_CAST msg, va);
-	    error_msg[sizeof(error_msg) - 1] = '\0';
-	    va_end(va);	
-	} else {
-	    error_msg[0] = '\0';	    
-	}
-	xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);
-    }	
+    if(xmlSecErrorsClbk != NULL) {
+     xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE] = {'\0',};
+     const char* e_msg = NULL;
+     xmlSecSize i;
+     int len = 0;
+
+     if(xmlSecPrintErrorMessages == 0) {
+      if(reason != XMLSEC_ERRORS_MAX_NUMBER) {
+       for(i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
+        if(xmlSecErrorsGetCode(i) == reason) {
+         e_msg = xmlSecErrorsGetMsg(i);
+         sprintf(error_msg , "%s] [", e_msg);
+         len = strlen(error_msg);
+         break;
+        }
+       }
+      }
+     }
+
+    if(msg != NULL) {
+     va_list va;
+     va_start(va, msg);
+     xmlSecStrVPrintf(error_msg + len, sizeof(error_msg) - len, BAD_CAST msg, va);
+     error_msg[sizeof(error_msg) - 1] = '\0';
+     va_end(va);
+    } else {
+      error_msg[0] = '\0';
+    }
+
+    xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);      }
 }
