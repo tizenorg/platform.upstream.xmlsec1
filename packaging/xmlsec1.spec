@@ -6,6 +6,7 @@ Summary:        Library providing support for "XML Signature" and "XML Encryptio
 Url:            http://www.aleksey.com/xmlsec/index.html
 Group:          System/Libraries
 Source0:        http://www.aleksey.com/xmlsec/download/xmlsec1-%{version}.tar.gz
+Source1001: 	xmlsec1.manifest
 BuildRequires:  pkgconfig(libxml-2.0) >= 2.6.27
 BuildRequires:  pkgconfig(libxslt)
 BuildRequires:  pkgconfig(openssl)
@@ -47,6 +48,7 @@ installed.
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 
 %build
@@ -78,6 +80,7 @@ make %{?_smp_mflags}
 
 
 %files
+%manifest %{name}.manifest
 %license COPYING
 %doc Copyright
 %{_libdir}/libxmlsec1.so.*
@@ -85,12 +88,14 @@ make %{?_smp_mflags}
 
 
 %files gcrypt
-%{_libdir}/libxmlsec1-gcrypt.so.*
+%manifest %{name}.manifest
 
 %files openssl
+%manifest %{name}.manifest
 %{_libdir}/libxmlsec1-openssl.so.*
 
 %files devel
+%manifest %{name}.manifest
 %doc Copyright
 %{_includedir}/xmlsec1
 %{_bindir}/xmlsec1-config
