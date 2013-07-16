@@ -7,7 +7,7 @@ Release:    1
 Group:      System/Libraries
 License:    MIT
 URL:        http://www.aleksey.com/xmlsec/index.html
-Source0:    http://www.aleksey.com/xmlsec/download/xmlsec1-%{version}.tar.gz
+Source0:    %{name}-%{version}.tar.gz
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(libxml-2.0) >= 2.6.27
@@ -61,6 +61,9 @@ make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/share/license
+cp COPYING %{buildroot}/usr/share/license/%{name}
+
 %make_install
 
 
@@ -86,7 +89,7 @@ rm -rf %{buildroot}
 %{_libdir}/libxmlsec1.so.*
 /usr/bin/xmlsec1
 /usr/share/man/man1/xmlsec1.1.gz
-
+/usr/share/license/%{name}
 
 %files openssl
 %manifest xmlsec1.manifest
