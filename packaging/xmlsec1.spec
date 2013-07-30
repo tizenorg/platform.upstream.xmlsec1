@@ -68,7 +68,6 @@ cp COPYING %{buildroot}/usr/share/license/%{name}
 
 
 
-
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig

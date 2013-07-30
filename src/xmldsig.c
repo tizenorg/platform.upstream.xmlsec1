@@ -1,4 +1,4 @@
-/**
+/** 
  * XML Security Library (http://www.aleksey.com/xmlsec).
  *
  * "XML Digital Signature" implementation
@@ -1865,15 +1865,15 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
         XMLSEC_ERRORS_R_INVALID_NODE,
         "expected=%s",
         xmlSecErrorsSafeString(xmlSecNodeSignature));
-        return(-1);
-	}
+        return(-1); 
+    }
 
     /* read node data */
     xmlSecAssert2(dsigCtx->id == NULL, -1);
     dsigCtx->id = xmlGetProp(node, xmlSecAttrId);
 
     /* first node is required SignedInfo */
-    cur = xmlSecGetNextElementNode(node->children);
+    cur = xmlSecGetNextElementNode(node->children); 
     if((cur == NULL) || (!xmlSecCheckNodeName(cur, xmlSecNodeSignedInfo, xmlSecDSigNs))) {
         xmlSecError(XMLSEC_ERRORS_HERE,
         NULL,
@@ -1949,7 +1949,7 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
         return(0);
     }
 
-    /* as the result, we should have sign and c14n methods set */
+    /* as the result, we should have sign and c14n methods set */ 
     xmlSecAssert2(dsigCtx->signMethod != NULL, -1);
     xmlSecAssert2(dsigCtx->c14nMethod != NULL, -1);
 
@@ -2025,7 +2025,7 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
     return(0);
 }
 
-int
+int 
 xmlSecDSigCtxProcessSignedInfoNodeEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, int noHash, void* pList) {
     xmlSecDSigReferenceCtxPtr dsigRefCtx;
     xmlNodePtr cur;
@@ -2221,7 +2221,7 @@ error:
     return(ret);
 }
 
-int
+int 
 xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodePtr node, int noHash, void* pList) {
     xmlSecTransformCtxPtr transformCtx;
     xmlNodePtr digestValueNode;
