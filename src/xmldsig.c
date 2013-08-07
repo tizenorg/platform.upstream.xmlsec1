@@ -2167,27 +2167,26 @@ xmlSecDSigCtxProcessSignedInfoNodeEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
         }
 
     /* process */
-    ret = xmlSecDSigReferenceCtxProcessNodeEx(dsigRefCtx, cur, noHash, pList);
-    if(ret < 0) {
-        xmlSecError(XMLSEC_ERRORS_HERE,
-        NULL,
-        "xmlSecDSigReferenceCtxProcessNode",
-        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-        "node=%s",
-        xmlSecErrorsSafeString(xmlSecNodeGetName(cur)));
+    if(noHash != 1){ //if 0, then partial ///if 1, then no_hash
+        ret = xmlSecDSigReferenceCtxProcessNodeEx(dsigRefCtx, cur, noHash, pList);
+        if(ret < 0) {
+            xmlSecError(XMLSEC_ERRORS_HERE,
+            NULL,
+            "xmlSecDSigReferenceCtxProcessNode",
+            XMLSEC_ERRORS_R_XMLSEC_FAILED,
+            "node=%s",
+            xmlSecErrorsSafeString(xmlSecNodeGetName(cur)));
 
-        if(noHash != 1){
             ret = -1;
             goto error;
             }
-        }
+         }
 
-    if(noHash == 1) {
-        dsigRefCtx->status = xmlSecDSigStatusSucceeded;
-        }
+    dsigRefCtx->status = xmlSecDSigStatusSucceeded;
 
     /* bail out if next Reference processing failed */
     if(dsigRefCtx->status != xmlSecDSigStatusSucceeded) {
+        xmlSecError(XMLSEC_ERRORS_HERE, NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER, "###### false");
         dsigCtx->status = xmlSecDSigStatusInvalid;
         ret = -1;
         goto error;
