@@ -1,5 +1,5 @@
 Name:           xmlsec1
-Version:        1.2.14
+Version:        1.2.19
 Release:        1
 License:        MIT
 Summary:        Library providing support for "XML Signature" and "XML Encryption" standards
@@ -23,11 +23,11 @@ Group:          System/Libraries
 Requires:       %{name} = %{version}
 
 %description gcrypt
-OpenSSL plugin for XML Security Library provides OpenSSL based crypto services
+Gcrypt plugin for XML Security Library provides gcrypt based crypto services
 for the xmlsec library.
 
 %package openssl
-Summary:        Gcrypt crypto plugin for XML Security Library
+Summary:        OpenSSL crypto plugin for XML Security Library
 Group:          System/Libraries
 Requires:       %{name} = %{version}
 
@@ -83,13 +83,14 @@ make %{?_smp_mflags}
 %manifest %{name}.manifest
 %license COPYING
 %doc Copyright
+%exclude %{_libdir}/debug/
 %{_libdir}/libxmlsec1.so.*
 %{_bindir}/xmlsec1
 
 
 %files gcrypt
 %manifest %{name}.manifest
-#%{_libdir}/libxmlsec1-gcrypt.so.*
+%{_libdir}/libxmlsec1-gcrypt.so.*
 
 %files openssl
 %manifest %{name}.manifest
