@@ -1,11 +1,11 @@
-/** 
+/**
  * XML Security Library (http://www.aleksey.com/xmlsec).
  *
  * Simple SOAP messages parsing/creation.
  *
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
- * 
+ *
  * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
  */
 #include "globals.h"
@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 #include <string.h>
- 
+
 #include <libxml/tree.h>
 
 #include <xmlsec/xmlsec.h>
@@ -30,8 +30,8 @@
 /**
  * xmlSecSoap11CreateEnvelope:
  * @doc:        the parent doc (might be NULL).
- * 
- * Creates a new SOAP Envelope node. Caller is responsible for 
+ *
+ * Creates a new SOAP Envelope node. Caller is responsible for
  * adding the returned node to the XML document.
  *
  * XML Schema (http://schemas.xmlsoap.org/soap/envelope/):
@@ -41,7 +41,7 @@
  *         <xs:sequence>
  *             <xs:element ref="tns:Header" minOccurs="0"/>
  *             <xs:element ref="tns:Body" minOccurs="1"/>
- *             <xs:any namespace="##other" minOccurs="0" 
+ *             <xs:any namespace="##other" minOccurs="0"
  *                 maxOccurs="unbounded" processContents="lax"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##other" processContents="lax"/>
@@ -50,57 +50,57 @@
  * Returns: pointer to newly created <soap:Envelope> node or NULL
  * if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11CreateEnvelope(xmlDocPtr doc) {
     xmlNodePtr envNode;
     xmlNodePtr bodyNode;
     xmlNsPtr ns;
-    
+
     /* create Envelope node */
     envNode = xmlNewDocNode(doc, NULL, xmlSecNodeEnvelope, NULL);
     if(envNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlNewDocNode",
-		    XMLSEC_ERRORS_R_XML_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeEnvelope));
-	return(NULL);	            
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlNewDocNode",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeEnvelope));
+        return(NULL);
     }
-    
+
     ns = xmlNewNs(envNode, xmlSecSoap11Ns, NULL) ;
     if(ns == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlNewNs",
-		    XMLSEC_ERRORS_R_XML_FAILED,
-		    "ns=%s",
-		    xmlSecErrorsSafeString(xmlSecSoap11Ns));
-	xmlFreeNode(envNode);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlNewNs",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "ns=%s",
+                    xmlSecErrorsSafeString(xmlSecSoap11Ns));
+        xmlFreeNode(envNode);
+        return(NULL);
     }
     xmlSetNs(envNode, ns);
-    
-    /* add required Body node */    
+
+    /* add required Body node */
     bodyNode = xmlSecAddChild(envNode, xmlSecNodeBody, xmlSecSoap11Ns);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeBody));
-	xmlFreeNode(envNode);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeBody));
+        xmlFreeNode(envNode);
+        return(NULL);
     }
-    
+
     return(envNode);
 }
 
 /**
  * xmlSecSoap11EnsureHeader:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets the pointer to <soap:Header> node (if necessary, the node
  * is created).
  *
@@ -109,7 +109,7 @@ xmlSecSoap11CreateEnvelope(xmlDocPtr doc) {
  *     <xs:element name="Header" type="tns:Header"/>
  *     <xs:complexType name="Header">
  *         <xs:sequence>
- *             <xs:any namespace="##other" minOccurs="0" 
+ *             <xs:any namespace="##other" minOccurs="0"
  *                 maxOccurs="unbounded" processContents="lax"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##other" processContents="lax"/>
@@ -117,11 +117,11 @@ xmlSecSoap11CreateEnvelope(xmlDocPtr doc) {
  *
  * Returns: pointer to <soap:Header> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11EnsureHeader(xmlNodePtr envNode) {
     xmlNodePtr hdrNode;
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* try to find Header node first */
@@ -132,25 +132,25 @@ xmlSecSoap11EnsureHeader(xmlNodePtr envNode) {
 
     /* if the first element child is not Header then it is Body */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap11Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* finally add Header node before body */
     hdrNode = xmlSecAddPrevSibling(cur, xmlSecNodeHeader, xmlSecSoap11Ns);
     if(hdrNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
                     "xmlSecAddPrevSibling",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
         return(NULL);
     }
-    
+
     return(hdrNode);
 }
 
@@ -158,7 +158,7 @@ xmlSecSoap11EnsureHeader(xmlNodePtr envNode) {
  * xmlSecSoap11AddBodyEntry:
  * @envNode:            the pointer to <soap:Envelope> node.
  * @entryNode:          the pointer to body entry node.
- * 
+ *
  * Adds a new entry to <soap:Body> node.
  *
  * Returns: pointer to the added entry (@contentNode) or NULL if an error occurs.
@@ -172,12 +172,12 @@ xmlSecSoap11AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
 
     bodyNode = xmlSecSoap11GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap11GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap11GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(xmlSecAddChildNode(bodyNode, entryNode));
@@ -186,7 +186,7 @@ xmlSecSoap11AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
 /**
  * xmlSecSoap11AddFaultEntry:
  * @envNode:            the pointer to <soap:Envelope> node.
- * @faultCodeHref:      the fault code QName href (must be known in th context of 
+ * @faultCodeHref:      the fault code QName href (must be known in th context of
  *                      <soap:Body> node).
  * @faultCodeLocalPart: the fault code QName LocalPart.
  * @faultString:        the human readable explanation of the fault.
@@ -208,17 +208,17 @@ xmlSecSoap11AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
  *     </xs:complexType>
  *     <xs:complexType name="detail">
  *         <xs:sequence>
- *             <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" 
+ *             <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
  *                 processContents="lax"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##any" processContents="lax"/>
  *     </xs:complexType>
- * 
+ *
  * Returns: pointer to the added entry or NULL if an error occurs.
  */
 xmlNodePtr
-xmlSecSoap11AddFaultEntry(xmlNodePtr envNode, const xmlChar* faultCodeHref, 
-                          const xmlChar* faultCodeLocalPart, 
+xmlSecSoap11AddFaultEntry(xmlNodePtr envNode, const xmlChar* faultCodeHref,
+                          const xmlChar* faultCodeLocalPart,
                           const xmlChar* faultString, const xmlChar* faultActor) {
     xmlNodePtr bodyNode;
     xmlNodePtr faultNode;
@@ -232,65 +232,65 @@ xmlSecSoap11AddFaultEntry(xmlNodePtr envNode, const xmlChar* faultCodeHref,
     /* get Body node */
     bodyNode = xmlSecSoap11GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap11GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap11GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* check that we don't have Fault node already */
     faultNode = xmlSecFindChild(bodyNode, xmlSecNodeFault, xmlSecSoap11Ns);
     if(faultNode != NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_ALREADY_PRESENT,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_ALREADY_PRESENT,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* add Fault node */
     faultNode = xmlSecAddChild(bodyNode, xmlSecNodeFault, xmlSecSoap11Ns);
     if(faultNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeFault));
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeFault));
+        return(NULL);
     }
-    
+
     /* add faultcode node */
     cur = xmlSecAddChild(faultNode, xmlSecNodeFaultCode, xmlSecSoap11Ns);
     if(cur == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeFaultCode));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeFaultCode));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
-    
+
     /* create qname for fault code */
     qname = xmlSecGetQName(cur, faultCodeHref, faultCodeLocalPart);
     if(qname == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
-	            "xmlSecGetQName",
-	            XMLSEC_ERRORS_R_XML_FAILED,
-	            "node=%s",
-	            xmlSecErrorsSafeString(cur->name));
+                    "xmlSecGetQName",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(cur->name));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
-    
+
     /* set faultcode value */
     xmlNodeSetContent(cur, qname);
     xmlFree(qname);
@@ -298,39 +298,39 @@ xmlSecSoap11AddFaultEntry(xmlNodePtr envNode, const xmlChar* faultCodeHref,
     /* add faultstring node */
     cur = xmlSecAddChild(faultNode, xmlSecNodeFaultString, xmlSecSoap11Ns);
     if(cur == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeFaultString));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeFaultString));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
 
     /* set faultstring node */
     xmlNodeSetContent(cur, faultString);
-    
+
     if(faultActor != NULL) {
         /* add faultactor node */
         cur = xmlSecAddChild(faultNode, xmlSecNodeFaultActor, xmlSecSoap11Ns);
         if(cur == NULL) {
-	    xmlSecError(XMLSEC_ERRORS_HERE,
-		        NULL,
-		        "xmlSecAddChild",
-		        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		        "node=%s",
-		        xmlSecErrorsSafeString(xmlSecNodeFaultActor));
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        "xmlSecAddChild",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        "node=%s",
+                        xmlSecErrorsSafeString(xmlSecNodeFaultActor));
             xmlUnlinkNode(faultNode);
             xmlFreeNode(faultNode);
-	    return(NULL);	        	
+            return(NULL);
         }
-    
+
         /* set faultactor node */
         xmlNodeSetContent(cur, faultActor);
     }
-    
+
     return(faultNode);
 }
 
@@ -343,20 +343,20 @@ xmlSecSoap11AddFaultEntry(xmlNodePtr envNode, const xmlChar* faultCodeHref,
  * Returns: 1 if @envNode has a valid <soap:Envelope> element, 0 if it is
  * not valid or a negative value if an error occurs.
  */
-int 
+int
 xmlSecSoap11CheckEnvelope(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, -1);
-    
+
     /* verify envNode itself */
     if(!xmlSecCheckNodeName(envNode, xmlSecNodeEnvelope, xmlSecSoap11Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeEnvelope),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeEnvelope),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
 
     /* optional Header node first */
@@ -367,29 +367,29 @@ xmlSecSoap11CheckEnvelope(xmlNodePtr envNode) {
 
     /* required Body node is next */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap11Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
-    
+
     return(1);
 }
 
 /**
  * xmlSecSoap11GetHeader:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets pointer to the <soap:Header> node.
  *
  * Returns: pointer to <soap:Header> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11GetHeader(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* optional Header node is first */
@@ -404,15 +404,15 @@ xmlSecSoap11GetHeader(xmlNodePtr envNode) {
 /**
  * xmlSecSoap11GetBody:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets pointer to the <soap:Body> node.
  *
  * Returns: pointer to <soap:Body> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11GetBody(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* optional Header node first */
@@ -423,12 +423,12 @@ xmlSecSoap11GetBody(xmlNodePtr envNode) {
 
     /* Body node is next */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap11Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(cur);
@@ -442,23 +442,23 @@ xmlSecSoap11GetBody(xmlNodePtr envNode) {
  *
  * Returns: the number of body entries.
  */
-xmlSecSize 
+xmlSecSize
 xmlSecSoap11GetBodyEntriesNumber(xmlNodePtr envNode) {
     xmlSecSize number = 0;
     xmlNodePtr bodyNode;
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, 0);
 
     /* get Body node */
     bodyNode = xmlSecSoap11GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap11GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap11GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
 
     cur = xmlSecGetNextElementNode(bodyNode->children);
@@ -466,7 +466,7 @@ xmlSecSoap11GetBodyEntriesNumber(xmlNodePtr envNode) {
         number++;
         cur = xmlSecGetNextElementNode(cur->next);
     }
-    
+
     return(number);
 }
 
@@ -474,27 +474,27 @@ xmlSecSoap11GetBodyEntriesNumber(xmlNodePtr envNode) {
  * xmlSecSoap11GetBodyEntry:
  * @envNode:    the pointer to <soap:Envelope> node.
  * @pos:        the body entry number.
- * 
+ *
  * Gets the body entry number @pos.
  *
  * Returns: pointer to body entry node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11GetBodyEntry(xmlNodePtr envNode, xmlSecSize pos) {
     xmlNodePtr bodyNode;
     xmlNodePtr cur;
- 
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* get Body node */
     bodyNode = xmlSecSoap11GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap11GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap11GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     cur = xmlSecGetNextElementNode(bodyNode->children);
@@ -509,12 +509,12 @@ xmlSecSoap11GetBodyEntry(xmlNodePtr envNode, xmlSecSize pos) {
 /**
  * xmlSecSoap11GetFaultEntry:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets the Fault entry (if any).
  *
  * Returns: pointer to Fault entry or NULL if it does not exist.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap11GetFaultEntry(xmlNodePtr envNode) {
     xmlNodePtr bodyNode;
 
@@ -523,24 +523,24 @@ xmlSecSoap11GetFaultEntry(xmlNodePtr envNode) {
     /* get Body node */
     bodyNode = xmlSecSoap11GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap11GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap11GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(xmlSecFindChild(bodyNode, xmlSecNodeFault, xmlSecSoap11Ns));
 }
-								 
+
 
 /***********************************************************************
  *
  * SOAP 1.2
  *
  **********************************************************************/
-static const xmlSecQName2IntegerInfo gXmlSecSoap12FaultCodeInfo[] = 
+static const xmlSecQName2IntegerInfo gXmlSecSoap12FaultCodeInfo[] =
 {
     { xmlSecSoap12Ns, xmlSecSoapFaultCodeVersionMismatch,
       xmlSecSoap12FaultCodeVersionMismatch },
@@ -552,18 +552,18 @@ static const xmlSecQName2IntegerInfo gXmlSecSoap12FaultCodeInfo[] =
       xmlSecSoap12FaultCodeSender },
     { xmlSecSoap12Ns, xmlSecSoapFaultCodeReceiver,
       xmlSecSoap12FaultCodeReceiver },
-    { NULL, NULL, 0 }	/* MUST be last in the list */
+    { NULL, NULL, 0 }   /* MUST be last in the list */
 };
 
 /**
  * xmlSecSoap12CreateEnvelope:
  * @doc:        the parent doc (might be NULL).
- * 
- * Creates a new SOAP 1.2 Envelope node. Caller is responsible for 
+ *
+ * Creates a new SOAP 1.2 Envelope node. Caller is responsible for
  * adding the returned node to the XML document.
  *
  * XML Schema (http://www.w3.org/2003/05/soap-envelope):
- * 
+ *
  *     <xs:element name="Envelope" type="tns:Envelope"/>
  *     <xs:complexType name="Envelope">
  *         <xs:sequence>
@@ -576,57 +576,57 @@ static const xmlSecQName2IntegerInfo gXmlSecSoap12FaultCodeInfo[] =
  * Returns: pointer to newly created <soap:Envelope> node or NULL
  * if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12CreateEnvelope(xmlDocPtr doc) {
     xmlNodePtr envNode;
     xmlNodePtr bodyNode;
     xmlNsPtr ns;
-    
+
     /* create Envelope node */
     envNode = xmlNewDocNode(doc, NULL, xmlSecNodeEnvelope, NULL);
     if(envNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlNewDocNode",
-		    XMLSEC_ERRORS_R_XML_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeEnvelope));
-	return(NULL);	            
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlNewDocNode",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeEnvelope));
+        return(NULL);
     }
-    
+
     ns = xmlNewNs(envNode, xmlSecSoap12Ns, NULL) ;
     if(ns == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlNewNs",
-		    XMLSEC_ERRORS_R_XML_FAILED,
-		    "ns=%s",
-		    xmlSecErrorsSafeString(xmlSecSoap12Ns));
-	xmlFreeNode(envNode);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlNewNs",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "ns=%s",
+                    xmlSecErrorsSafeString(xmlSecSoap12Ns));
+        xmlFreeNode(envNode);
+        return(NULL);
     }
     xmlSetNs(envNode, ns);
-    
-    /* add required Body node */    
+
+    /* add required Body node */
     bodyNode = xmlSecAddChild(envNode, xmlSecNodeBody, xmlSecSoap12Ns);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeBody));
-	xmlFreeNode(envNode);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeBody));
+        xmlFreeNode(envNode);
+        return(NULL);
     }
-    
+
     return(envNode);
 }
 
 /**
  * xmlSecSoap12EnsureHeader:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets the pointer to <soap:Header> node (if necessary, the node
  * is created).
  *
@@ -635,7 +635,7 @@ xmlSecSoap12CreateEnvelope(xmlDocPtr doc) {
  *     <xs:element name="Header" type="tns:Header"/>
  *     <xs:complexType name="Header">
  *         <xs:sequence>
- *             <xs:any namespace="##any" processContents="lax" 
+ *             <xs:any namespace="##any" processContents="lax"
  *                     minOccurs="0" maxOccurs="unbounded"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##other" processContents="lax"/>
@@ -643,11 +643,11 @@ xmlSecSoap12CreateEnvelope(xmlDocPtr doc) {
  *
  * Returns: pointer to <soap:Header> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12EnsureHeader(xmlNodePtr envNode) {
     xmlNodePtr hdrNode;
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* try to find Header node first */
@@ -658,25 +658,25 @@ xmlSecSoap12EnsureHeader(xmlNodePtr envNode) {
 
     /* if the first element child is not Header then it is Body */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap12Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* finally add Header node before body */
     hdrNode = xmlSecAddPrevSibling(cur, xmlSecNodeHeader, xmlSecSoap12Ns);
     if(hdrNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
                     "xmlSecAddPrevSibling",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
         return(NULL);
     }
-    
+
     return(hdrNode);
 }
 
@@ -684,7 +684,7 @@ xmlSecSoap12EnsureHeader(xmlNodePtr envNode) {
  * xmlSecSoap12AddBodyEntry:
  * @envNode:            the pointer to <soap:Envelope> node.
  * @entryNode:          the pointer to body entry node.
- * 
+ *
  * Adds a new entry to <soap:Body> node.
  *
  * XML Schema (http://www.w3.org/2003/05/soap-envelope):
@@ -692,7 +692,7 @@ xmlSecSoap12EnsureHeader(xmlNodePtr envNode) {
  *     <xs:element name="Body" type="tns:Body"/>
  *     <xs:complexType name="Body">
  *         <xs:sequence>
- *             <xs:any namespace="##any" processContents="lax" 
+ *             <xs:any namespace="##any" processContents="lax"
  *                     minOccurs="0" maxOccurs="unbounded"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##other" processContents="lax"/>
@@ -709,12 +709,12 @@ xmlSecSoap12AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
 
     bodyNode = xmlSecSoap12GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(xmlSecAddChildNode(bodyNode, entryNode));
@@ -726,9 +726,9 @@ xmlSecSoap12AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
  * @faultCode:          the fault code.
  * @faultReasonText:    the human readable explanation of the fault.
  * @faultReasonLang:    the language (xml:lang) for @faultReason string.
- * @faultNodeURI:       the more preciese information about fault source 
+ * @faultNodeURI:       the more preciese information about fault source
  *                      (might be NULL).
- * @faultRole:          the role the node was operating in at the point 
+ * @faultRole:          the role the node was operating in at the point
  *                      the fault occurred (might be NULL).
  *
  * Adds <soap:Fault> entry to the @envNode. Note that only one <soap:Fault>
@@ -746,21 +746,21 @@ xmlSecSoap12AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
  *             <xs:element name="Detail" type="tns:detail" minOccurs="0"/>
  *         </xs:sequence>
  *     </xs:complexType>
- *     
+ *
  *     <xs:complexType name="faultcode">
  *         <xs:sequence>
  *             <xs:element name="Value" type="tns:faultcodeEnum"/>
  *             <xs:element name="Subcode" type="tns:subcode" minOccurs="0"/>
  *         </xs:sequence>
  *     </xs:complexType>
- *     
+ *
  *     <xs:complexType name="faultreason">
  *         <xs:sequence>
- *             <xs:element name="Text" type="tns:reasontext" 
+ *             <xs:element name="Text" type="tns:reasontext"
  *                         minOccurs="1" maxOccurs="unbounded"/>
  *         </xs:sequence>
  *     </xs:complexType>
- *     
+ *
  *     <xs:complexType name="reasontext">
  *         <xs:simpleContent>
  *             <xs:extension base="xs:string">
@@ -768,7 +768,7 @@ xmlSecSoap12AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
  *             </xs:extension>
  *         </xs:simpleContent>
  *     </xs:complexType>
- *     
+ *
  *     <xs:simpleType name="faultcodeEnum">
  *         <xs:restriction base="xs:QName">
  *             <xs:enumeration value="tns:DataEncodingUnknown"/>
@@ -778,28 +778,28 @@ xmlSecSoap12AddBodyEntry(xmlNodePtr envNode, xmlNodePtr entryNode) {
  *             <xs:enumeration value="tns:VersionMismatch"/>
  *         </xs:restriction>
  *     </xs:simpleType>
- *     
+ *
  *     <xs:complexType name="subcode">
  *         <xs:sequence>
  *             <xs:element name="Value" type="xs:QName"/>
  *             <xs:element name="Subcode" type="tns:subcode" minOccurs="0"/>
  *         </xs:sequence>
  *     </xs:complexType>
- *     
+ *
  *     <xs:complexType name="detail">
  *         <xs:sequence>
- *             <xs:any namespace="##any" processContents="lax" 
+ *             <xs:any namespace="##any" processContents="lax"
  *                 minOccurs="0" maxOccurs="unbounded"/>
  *         </xs:sequence>
  *         <xs:anyAttribute namespace="##other" processContents="lax"/>
  *     </xs:complexType>
- *     
+ *
  * Returns: pointer to the added entry or NULL if an error occurs.
  */
 xmlNodePtr
 xmlSecSoap12AddFaultEntry(xmlNodePtr envNode, xmlSecSoap12FaultCode faultCode,
-			 const xmlChar* faultReasonText, const xmlChar* faultReasonLang,
-			 const xmlChar* faultNodeURI, const xmlChar* faultRole) {
+                         const xmlChar* faultReasonText, const xmlChar* faultReasonLang,
+                         const xmlChar* faultNodeURI, const xmlChar* faultRole) {
     xmlNodePtr bodyNode;
     xmlNodePtr faultNode;
     xmlNodePtr cur;
@@ -813,107 +813,107 @@ xmlSecSoap12AddFaultEntry(xmlNodePtr envNode, xmlSecSoap12FaultCode faultCode,
     /* get Body node */
     bodyNode = xmlSecSoap12GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* check that we don't have Fault node already */
     faultNode = xmlSecFindChild(bodyNode, xmlSecNodeFault, xmlSecSoap12Ns);
     if(faultNode != NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_ALREADY_PRESENT,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_ALREADY_PRESENT,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
-    
+
     /* add Fault node */
     faultNode = xmlSecAddChild(bodyNode, xmlSecNodeFault, xmlSecSoap12Ns);
     if(faultNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeFault));
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeFault));
+        return(NULL);
     }
-    
+
     /* add Code node */
     cur = xmlSecAddChild(faultNode, xmlSecNodeCode, xmlSecSoap12Ns);
     if(cur == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeCode));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeCode));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
-    
+
     /* write the fault code in Value child */
     ret = xmlSecQName2IntegerNodeWrite(gXmlSecSoap12FaultCodeInfo, cur,
                                        xmlSecNodeValue, xmlSecSoap12Ns,
                                        faultCode);
     if(ret < 0) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecQName2IntegerNodeWrite",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "faultCode=%d",
-		    faultCode);
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecQName2IntegerNodeWrite",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "faultCode=%d",
+                    faultCode);
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	
+        return(NULL);
     }
 
     /* add Reason node */
     cur = xmlSecAddChild(faultNode, xmlSecNodeReason, xmlSecSoap12Ns);
     if(cur == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeReason));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeReason));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
-    
+
     /* Add Reason/Text node */
     if(xmlSecSoap12AddFaultReasonText(faultNode, faultReasonText, faultReasonLang) == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12AddFaultReasonText",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "text=%s",
-		    xmlSecErrorsSafeString(faultReasonText));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12AddFaultReasonText",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "text=%s",
+                    xmlSecErrorsSafeString(faultReasonText));
         xmlUnlinkNode(faultNode);
         xmlFreeNode(faultNode);
-	return(NULL);	        	
+        return(NULL);
     }
 
     if(faultNodeURI != NULL) {
         /* add Node node */
         cur = xmlSecAddChild(faultNode, xmlSecNodeNode, xmlSecSoap12Ns);
         if(cur == NULL) {
-	    xmlSecError(XMLSEC_ERRORS_HERE,
-		        NULL,
-		        "xmlSecAddChild",
-		        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		        "node=%s",
-		        xmlSecErrorsSafeString(xmlSecNodeNode));
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        "xmlSecAddChild",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        "node=%s",
+                        xmlSecErrorsSafeString(xmlSecNodeNode));
             xmlUnlinkNode(faultNode);
             xmlFreeNode(faultNode);
-	    return(NULL);	        	
+            return(NULL);
         }
         xmlNodeSetContent(cur, faultNodeURI);
     }
@@ -922,19 +922,19 @@ xmlSecSoap12AddFaultEntry(xmlNodePtr envNode, xmlSecSoap12FaultCode faultCode,
         /* add Role node */
         cur = xmlSecAddChild(faultNode, xmlSecNodeRole, xmlSecSoap12Ns);
         if(cur == NULL) {
-	    xmlSecError(XMLSEC_ERRORS_HERE,
-		        NULL,
-		        "xmlSecAddChild",
-		        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		        "node=%s",
-		        xmlSecErrorsSafeString(xmlSecNodeRole));
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        "xmlSecAddChild",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        "node=%s",
+                        xmlSecErrorsSafeString(xmlSecNodeRole));
             xmlUnlinkNode(faultNode);
             xmlFreeNode(faultNode);
-	    return(NULL);	        	
+            return(NULL);
         }
         xmlNodeSetContent(cur, faultRole);
     }
-    
+
     return(faultNode);
 }
 
@@ -949,7 +949,7 @@ xmlSecSoap12AddFaultEntry(xmlNodePtr envNode, xmlSecSoap12FaultCode faultCode,
  * Returns: a pointer to the newly created <Subcode> node or NULL if an error
  * occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12AddFaultSubcode(xmlNodePtr faultNode, const xmlChar* subCodeHref, const xmlChar* subCodeName) {
     xmlNodePtr cur, subcodeNode, valueNode;
     xmlChar* qname;
@@ -962,11 +962,11 @@ xmlSecSoap12AddFaultSubcode(xmlNodePtr faultNode, const xmlChar* subCodeHref, co
     cur = xmlSecGetNextElementNode(faultNode->children);
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeCode, xmlSecSoap12Ns)) {
         xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
                     NULL,
-	    	    XMLSEC_ERRORS_R_INVALID_NODE,
-		    "node=%s",
-    		    xmlSecErrorsSafeString(xmlSecNodeCode));
+                    NULL,
+                    XMLSEC_ERRORS_R_INVALID_NODE,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeCode));
         return(NULL);
     }
 
@@ -986,27 +986,27 @@ xmlSecSoap12AddFaultSubcode(xmlNodePtr faultNode, const xmlChar* subCodeHref, co
     /* add Subcode node */
     subcodeNode = xmlSecAddChild(cur, xmlSecNodeSubcode, xmlSecSoap12Ns);
     if(subcodeNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeSubcode));
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeSubcode));
+        return(NULL);
     }
 
     /* add Value node */
     valueNode = xmlSecAddChild(subcodeNode, xmlSecNodeValue, xmlSecSoap12Ns);
     if(valueNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeValue));
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeValue));
         xmlUnlinkNode(subcodeNode);
         xmlFreeNode(subcodeNode);
-	return(NULL);	        	
+        return(NULL);
     }
 
     /* create qname for fault code */
@@ -1014,13 +1014,13 @@ xmlSecSoap12AddFaultSubcode(xmlNodePtr faultNode, const xmlChar* subCodeHref, co
     if(qname == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
-	            "xmlSecGetQName",
-	            XMLSEC_ERRORS_R_XML_FAILED,
-	            "node=%s",
-	            xmlSecErrorsSafeString(cur->name));
+                    "xmlSecGetQName",
+                    XMLSEC_ERRORS_R_XML_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(cur->name));
         xmlUnlinkNode(subcodeNode);
         xmlFreeNode(subcodeNode);
-	return(NULL);	        	
+        return(NULL);
     }
 
     /* set result qname in Value node */
@@ -1043,8 +1043,8 @@ xmlSecSoap12AddFaultSubcode(xmlNodePtr faultNode, const xmlChar* subCodeHref, co
  * Returns: a pointer to the newly created <Text> node or NULL if an error
  * occurs.
  */
-xmlNodePtr 
-xmlSecSoap12AddFaultReasonText(xmlNodePtr faultNode, const xmlChar* faultReasonText, 
+xmlNodePtr
+xmlSecSoap12AddFaultReasonText(xmlNodePtr faultNode, const xmlChar* faultReasonText,
                                const xmlChar* faultReasonLang) {
     xmlNodePtr reasonNode;
     xmlNodePtr textNode;
@@ -1056,25 +1056,25 @@ xmlSecSoap12AddFaultReasonText(xmlNodePtr faultNode, const xmlChar* faultReasonT
     /* find Reason node */
     reasonNode = xmlSecFindChild(faultNode,  xmlSecNodeReason, xmlSecSoap12Ns);
     if(reasonNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecFindChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeReason));
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecFindChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeReason));
+        return(NULL);
     }
 
     /* add Text node */
     textNode = xmlSecAddChild(reasonNode, xmlSecNodeText, xmlSecSoap12Ns);
     if(textNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecAddChild",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    "node=%s",
-		    xmlSecErrorsSafeString(xmlSecNodeText));
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecAddChild",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "node=%s",
+                    xmlSecErrorsSafeString(xmlSecNodeText));
+        return(NULL);
     }
     xmlNodeSetContent(textNode, faultReasonText);
     xmlNodeSetLang(textNode, faultReasonLang);
@@ -1086,13 +1086,13 @@ xmlSecSoap12AddFaultReasonText(xmlNodePtr faultNode, const xmlChar* faultReasonT
  * xmlSecSoap12AddFaultDetailEntry:
  * @faultNode:          the pointer to <Fault> node.
  * @detailEntryNode:    the pointer to detail entry node.
- * 
+ *
  * Adds a new child to the Detail child element of @faultNode.
  *
- * Returns: pointer to the added child (@detailEntryNode) or NULL if an error 
+ * Returns: pointer to the added child (@detailEntryNode) or NULL if an error
  * occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12AddFaultDetailEntry(xmlNodePtr faultNode, xmlNodePtr detailEntryNode) {
     xmlNodePtr detailNode;
 
@@ -1104,16 +1104,16 @@ xmlSecSoap12AddFaultDetailEntry(xmlNodePtr faultNode, xmlNodePtr detailEntryNode
     if(detailNode == NULL) {
         detailNode = xmlSecAddChild(faultNode, xmlSecNodeDetail, xmlSecSoap12Ns);
         if(detailNode == NULL) {
-    	    xmlSecError(XMLSEC_ERRORS_HERE,
-		        NULL,
-		        "xmlSecAddChild",
-		        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		        "node=%s",
-		        xmlSecErrorsSafeString(xmlSecNodeDetail));
-	    return(NULL);	        	
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        "xmlSecAddChild",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        "node=%s",
+                        xmlSecErrorsSafeString(xmlSecNodeDetail));
+            return(NULL);
         }
     }
-    
+
     return(xmlSecAddChildNode(detailNode, detailEntryNode));
 }
 
@@ -1126,20 +1126,20 @@ xmlSecSoap12AddFaultDetailEntry(xmlNodePtr faultNode, xmlNodePtr detailEntryNode
  * Returns: 1 if @envNode has a valid <soap:Envelope> element, 0 if it is
  * not valid or a negative value if an error occurs.
  */
-int 
+int
 xmlSecSoap12CheckEnvelope(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, -1);
-    
+
     /* verify envNode itself */
     if(!xmlSecCheckNodeName(envNode, xmlSecNodeEnvelope, xmlSecSoap12Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeEnvelope),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeEnvelope),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
 
     /* optional Header node first */
@@ -1150,29 +1150,29 @@ xmlSecSoap12CheckEnvelope(xmlNodePtr envNode) {
 
     /* required Body node is next */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap12Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
-    
+
     return(1);
 }
 
 /**
  * xmlSecSoap12GetHeader:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets pointer to the <soap:Header> node.
  *
  * Returns: pointer to <soap:Header> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12GetHeader(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* optional Header node is first */
@@ -1187,15 +1187,15 @@ xmlSecSoap12GetHeader(xmlNodePtr envNode) {
 /**
  * xmlSecSoap12GetBody:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets pointer to the <soap:Body> node.
  *
  * Returns: pointer to <soap:Body> node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12GetBody(xmlNodePtr envNode) {
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* optional Header node first */
@@ -1206,12 +1206,12 @@ xmlSecSoap12GetBody(xmlNodePtr envNode) {
 
     /* Body node is next */
     if((cur == NULL) || !xmlSecCheckNodeName(cur, xmlSecNodeBody, xmlSecSoap12Ns)) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    xmlSecErrorsSafeString(xmlSecNodeBody),
-		    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeBody),
+                    XMLSEC_ERRORS_R_NODE_NOT_FOUND,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(cur);
@@ -1225,23 +1225,23 @@ xmlSecSoap12GetBody(xmlNodePtr envNode) {
  *
  * Returns: the number of body entries.
  */
-xmlSecSize 
+xmlSecSize
 xmlSecSoap12GetBodyEntriesNumber(xmlNodePtr envNode) {
     xmlSecSize number = 0;
     xmlNodePtr bodyNode;
     xmlNodePtr cur;
-    
+
     xmlSecAssert2(envNode != NULL, 0);
 
     /* get Body node */
     bodyNode = xmlSecSoap12GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(0);
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(0);
     }
 
     cur = xmlSecGetNextElementNode(bodyNode->children);
@@ -1249,7 +1249,7 @@ xmlSecSoap12GetBodyEntriesNumber(xmlNodePtr envNode) {
         number++;
         cur = xmlSecGetNextElementNode(cur->next);
     }
-    
+
     return(number);
 }
 
@@ -1257,27 +1257,27 @@ xmlSecSoap12GetBodyEntriesNumber(xmlNodePtr envNode) {
  * xmlSecSoap12GetBodyEntry:
  * @envNode:    the pointer to <soap:Envelope> node.
  * @pos:        the body entry number.
- * 
+ *
  * Gets the body entry number @pos.
  *
  * Returns: pointer to body entry node or NULL if an error occurs.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12GetBodyEntry(xmlNodePtr envNode, xmlSecSize pos) {
     xmlNodePtr bodyNode;
     xmlNodePtr cur;
- 
+
     xmlSecAssert2(envNode != NULL, NULL);
 
     /* get Body node */
     bodyNode = xmlSecSoap12GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     cur = xmlSecGetNextElementNode(bodyNode->children);
@@ -1292,12 +1292,12 @@ xmlSecSoap12GetBodyEntry(xmlNodePtr envNode, xmlSecSize pos) {
 /**
  * xmlSecSoap12GetFaultEntry:
  * @envNode:    the pointer to <soap:Envelope> node.
- * 
+ *
  * Gets the Fault entry (if any).
  *
  * Returns: pointer to Fault entry or NULL if it does not exist.
  */
-xmlNodePtr 
+xmlNodePtr
 xmlSecSoap12GetFaultEntry(xmlNodePtr envNode) {
     xmlNodePtr bodyNode;
 
@@ -1306,17 +1306,17 @@ xmlSecSoap12GetFaultEntry(xmlNodePtr envNode) {
     /* get Body node */
     bodyNode = xmlSecSoap12GetBody(envNode);
     if(bodyNode == NULL) {
-	xmlSecError(XMLSEC_ERRORS_HERE,
-		    NULL,
-		    "xmlSecSoap12GetBody",
-		    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-		    XMLSEC_ERRORS_NO_MESSAGE);
-	return(NULL);	        	
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecSoap12GetBody",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
     }
 
     return(xmlSecFindChild(bodyNode, xmlSecNodeFault, xmlSecSoap12Ns));
 }
-								 
+
 #endif /* XMLSEC_NO_SOAP */
 
 

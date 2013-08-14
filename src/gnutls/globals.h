@@ -5,14 +5,14 @@
  *
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
- * 
+ *
  * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
  */
 #ifndef __XMLSEC_GLOBALS_H__
 #define __XMLSEC_GLOBALS_H__
 
 /**
- * Use autoconf defines if present. 
+ * Use autoconf defines if present.
  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -20,5 +20,12 @@
 
 #define IN_XMLSEC_CRYPTO
 #define XMLSEC_PRIVATE
+
+#define XMLSEC_GNUTLS_GCRYPT_REPORT_ERROR(err)  \
+        "error code=%d; error message='%s'",    \
+        (int)err, xmlSecErrorsSafeString(gcry_strerror((err)))
+#define XMLSEC_GNUTLS_REPORT_ERROR(err)         \
+        "error code=%d; error message='%s'",    \
+        (int)err, xmlSecErrorsSafeString(gnutls_strerror((err)))
 
 #endif /* ! __XMLSEC_GLOBALS_H__ */
