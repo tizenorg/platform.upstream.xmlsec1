@@ -54,6 +54,10 @@ installed.
 
 %build
 
+export GC_SECTIONS_FLAGS="-fdata-sections -ffunction-sections -Wl,--gc-sections"
+export CFLAGS+=" ${GC_SECTIONS_FLAGS}"
+export CXXFLAGS+=" ${GC_SECTIONS_FLAGS}"
+
 %configure --disable-static \
     --enable-dynamic --disable-crypto-dl --disable-apps-crypto-dl --without-gnutls
 
