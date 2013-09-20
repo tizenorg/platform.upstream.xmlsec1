@@ -10,7 +10,6 @@
  */
 #include "globals.h"
 
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -115,7 +114,6 @@ xmlSecErrorsShutdown(void) {
 void
 xmlSecErrorsSetCallback(xmlSecErrorsCallback callback) {
     xmlSecErrorsClbk = callback;
-    xmlSecErrorsDefaultCallbackEnableOutput(0);
 }
 
 /**
@@ -227,29 +225,13 @@ xmlSecError(const char* file, int line, const char* func,
             int reason, const char* msg, ...) {
 
     if(xmlSecErrorsClbk != NULL) {
-     xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE] = {'\0',};
-     const char* e_msg = NULL;
-     xmlSecSize i;
-     int len = 0;
-
-     if(xmlSecPrintErrorMessages == 0) {
-      if(reason != XMLSEC_ERRORS_MAX_NUMBER) {
-       for(i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
-        if(xmlSecErrorsGetCode(i) == reason) {
-         e_msg = xmlSecErrorsGetMsg(i);
-         sprintf(error_msg , "%s] [", e_msg);
-         len = strlen(error_msg);
-         break;
-        }
-       }
-      }
-     }
+        xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE];
 
         if(msg != NULL) {
             va_list va;
 
             va_start(va, msg);
-     xmlSecStrVPrintf(error_msg + len, sizeof(error_msg) - len, BAD_CAST msg, va);
+            xmlSecStrVPrintf(error_msg, sizeof(error_msg), BAD_CAST msg, va);
             error_msg[sizeof(error_msg) - 1] = '\0';
             va_end(va);
         } else {

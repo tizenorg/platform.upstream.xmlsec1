@@ -257,11 +257,6 @@ XMLSEC_EXPORT void              xmlSecDSigReferenceCtxDebugDump (xmlSecDSigRefer
 XMLSEC_EXPORT void              xmlSecDSigReferenceCtxDebugXmlDump(xmlSecDSigReferenceCtxPtr dsigRefCtx,
                                                                  FILE* output);
 
-XMLSEC_EXPORT int               xmlSecDSigCtxVerifyEx(xmlSecDSigCtxPtr dsigCtx,
-                                                      xmlNodePtr node, int noHash, void* pList);
-
-
-
 /**************************************************************************
  *
  * xmlSecDSigReferenceCtxListKlass
