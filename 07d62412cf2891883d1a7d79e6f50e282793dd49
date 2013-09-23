@@ -1,0 +1,8 @@
+Code-Review+2: Ryan Ware <ware@linux.intel.com>
+Code-Review+1: Casey Schaufler <casey.schaufler@intel.com>
+Verified+1: Anas Nashif <anas.nashif@intel.com>
+Submitted-by: Ryan Ware <ware@linux.intel.com>
+Submitted-at: Mon, 23 Sep 2013 14:41:38 -0700
+Reviewed-on: https://review.tizen.org/gerrit/10177
+Project: platform/upstream/xmlsec1
+Branch: refs/heads/tizen
