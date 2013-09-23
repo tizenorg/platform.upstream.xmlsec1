@@ -154,6 +154,10 @@ typedef enum {
  */
 #define XMLSEC_KEYINFO_FLAGS_X509DATA_SKIP_STRICT_CHECKS        0x00004000
 
+
+#define XMLSEC_KEYINFO_FLAGS_ALLOW_BROKEN_CHAIN  0x00008000
+#define XMLSEC_KEYINFO_ERROR_FLAGS_BROKEN_CHAIN  0x00000001
+
 /**
  * xmlSecKeyInfoCtx:
  * @userData:           the pointer to user data (xmlsec and xmlsec-crypto
