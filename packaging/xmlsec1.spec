@@ -1,3 +1,4 @@
+%define keepstatic 1
 Name:           xmlsec1
 Version:        1.2.19
 Release:        1
@@ -46,6 +47,18 @@ This C library allows to transform XML files into other XML files
 mechanism. To use it you need to have a version of libxml2 >= 2.6.27
 installed.
 
+%package devel-static
+Summary:        A library for Perl-compatible regular expressions
+Group:          System/Libraries
+Requires:       %{name}-devel = %{version}
+
+%description devel-static
+This C library allows to transform XML files into other XML files
+(or HTML, text, ...) using the standard XSLT stylesheet transformation
+mechanism. To use it you need to have a version of libxml2 >= 2.6.27
+installed.
+This package contains static versions of the libxmlsec1 library.
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
@@ -53,7 +66,7 @@ cp %{SOURCE1001} .
 
 %build
 
-%configure --disable-static \
+%configure --enable-static \
     --enable-dynamic --disable-crypto-dl --disable-apps-crypto-dl --without-gnutls
 
 make %{?_smp_mflags}
@@ -104,4 +117,8 @@ make %{?_smp_mflags}
 %{_libdir}/pkgconfig/*
 %{_libdir}/xmlsec1Conf.sh
 %{_datadir}/aclocal/xmlsec1.m4
+
+%files devel-static
+%manifest %{name}.manifest
+%{_libdir}/*.a
 
