@@ -1,13 +1,15 @@
 %define keepstatic 1
 Name:           xmlsec1
 Version:        1.2.19
-Release:        1
+Release:        0
 License:        MIT
 Summary:        Library providing support for "XML Signature" and "XML Encryption" standards
 Url:            http://www.aleksey.com/xmlsec/index.html
 Group:          System/Libraries
 Source0:        http://www.aleksey.com/xmlsec/download/xmlsec1-%{version}.tar.gz
-Source1001: 	xmlsec1.manifest
+Source1001:     xmlsec1.manifest
+BuildRequires:  fdupes
+BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(libxml-2.0) >= 2.6.27
 BuildRequires:  pkgconfig(libxslt)
 BuildRequires:  pkgconfig(openssl)
@@ -66,16 +68,21 @@ cp %{SOURCE1001} .
 
 %build
 
-%configure --enable-static \
-    --enable-dynamic --disable-crypto-dl --disable-apps-crypto-dl --without-gnutls
+%reconfigure \
+            --enable-static \
+            --enable-dynamic \
+            --disable-crypto-dl \
+            --disable-apps-crypto-dl \
+            --without-gnutls
 
-make %{?_smp_mflags}
+%__make %{?_smp_mflags}
 
 %install
 %make_install
 
-
 %remove_docs
+
+%fdupes %{buildroot}
 
 %post -p /sbin/ldconfig
 
@@ -85,12 +92,9 @@ make %{?_smp_mflags}
 
 %postun gcrypt -p /sbin/ldconfig
 
-
 %post openssl -p /sbin/ldconfig
 
 %postun openssl -p /sbin/ldconfig
-
-
 
 %files
 %manifest %{name}.manifest
@@ -98,7 +102,6 @@ make %{?_smp_mflags}
 %doc Copyright
 %{_libdir}/libxmlsec1.so.*
 %{_bindir}/xmlsec1
-
 
 %files gcrypt
 %manifest %{name}.manifest
@@ -121,4 +124,3 @@ make %{?_smp_mflags}
 %files devel-static
 %manifest %{name}.manifest
 %{_libdir}/*.a
-
