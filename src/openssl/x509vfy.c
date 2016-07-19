@@ -332,10 +332,6 @@ xmlSecOpenSSLX509StoreVerify(xmlSecKeyDataStorePtr store, XMLSEC_STACK_OF_X509* 
             depth       = X509_STORE_CTX_get_error_depth(&xsc);
 
             X509_STORE_CTX_cleanup (&xsc);
-            if(ret != 1 && keyInfoCtx->flags & XMLSEC_KEYINFO_FLAGS_ALLOW_BROKEN_CHAIN){
-                ret = 1;
-                keyInfoCtx->flags2 |= XMLSEC_KEYINFO_ERROR_FLAGS_BROKEN_CHAIN;
-            }
 
             if(ret == 1) {
                 res = cert;
