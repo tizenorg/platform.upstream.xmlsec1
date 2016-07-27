@@ -4,7 +4,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -20,6 +20,16 @@
 #include <xmlsec/openssl/crypto.h>
 #include <xmlsec/openssl/evp.h>
 
+/* new API from OpenSSL 1.1.0 (https://www.openssl.org/docs/manmaster/crypto/EVP_DigestInit.html):
+ *
+ * EVP_MD_CTX_create() and EVP_MD_CTX_destroy() were renamed to EVP_MD_CTX_new() and EVP_MD_CTX_free() in OpenSSL 1.1.
+ */
+#if !defined(XMLSEC_OPENSSL_110)
+#define EVP_MD_CTX_new()   EVP_MD_CTX_create()
+#define EVP_MD_CTX_free(x) EVP_MD_CTX_destroy((x))
+#endif /* !defined(XMLSEC_OPENSSL_110) */
+
+
 /**************************************************************************
  *
  * Internal OpenSSL Digest CTX
@@ -28,7 +38,7 @@
 typedef struct _xmlSecOpenSSLDigestCtx          xmlSecOpenSSLDigestCtx, *xmlSecOpenSSLDigestCtxPtr;
 struct _xmlSecOpenSSLDigestCtx {
     const EVP_MD*       digest;
-    EVP_MD_CTX          digestCtx;
+    EVP_MD_CTX*         digestCtx;
     xmlSecByte          dgst[EVP_MAX_MD_SIZE];
     xmlSecSize          dgstSize;       /* dgst size in bytes */
 };
@@ -108,6 +118,15 @@ xmlSecOpenSSLEvpDigestCheckId(xmlSecTransformPtr transform) {
     } else
 #endif /* XMLSEC_NO_GOST*/
 
+#ifndef XMLSEC_NO_GOST2012
+    if(xmlSecTransformCheckId(transform, xmlSecOpenSSLTransformGostR3411_2012_256Id)) {
+        return(1);
+    } else
+
+    if(xmlSecTransformCheckId(transform, xmlSecOpenSSLTransformGostR3411_2012_512Id)) {
+        return(1);
+    } else
+#endif /* XMLSEC_NO_GOST2012 */
 
     {
         return(0);
@@ -174,6 +193,20 @@ xmlSecOpenSSLEvpDigestInitialize(xmlSecTransformPtr transform) {
 #ifndef XMLSEC_NO_GOST
     if(xmlSecTransformCheckId(transform, xmlSecOpenSSLTransformGostR3411_94Id)) {
         ctx->digest = EVP_get_digestbyname("md_gost94");
+		if (!ctx->digest) {
+			xmlSecError(XMLSEC_ERRORS_HERE,
+					xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
+					NULL,
+					XMLSEC_ERRORS_R_INVALID_TRANSFORM,
+					XMLSEC_ERRORS_NO_MESSAGE);
+			return(-1);
+		}
+    } else
+#endif /* XMLSEC_NO_GOST */
+
+#ifndef XMLSEC_NO_GOST2012
+    if(xmlSecTransformCheckId(transform, xmlSecOpenSSLTransformGostR3411_2012_256Id)) {
+        ctx->digest = EVP_get_digestbyname("md_gost12_256");
 				if (!ctx->digest)
 				{
         xmlSecError(XMLSEC_ERRORS_HERE,
@@ -184,7 +217,20 @@ xmlSecOpenSSLEvpDigestInitialize(xmlSecTransformPtr transform) {
         return(-1);
 				}
     } else
-#endif /* XMLSEC_NO_GOST*/
+
+    if(xmlSecTransformCheckId(transform, xmlSecOpenSSLTransformGostR3411_2012_512Id)) {
+        ctx->digest = EVP_get_digestbyname("md_gost12_512");
+				if (!ctx->digest)
+				{
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
+                    NULL,
+                    XMLSEC_ERRORS_R_INVALID_TRANSFORM,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+				}
+    } else
+#endif /* XMLSEC_NO_GOST2012 */
 
     {
         xmlSecError(XMLSEC_ERRORS_HERE,
@@ -195,10 +241,18 @@ xmlSecOpenSSLEvpDigestInitialize(xmlSecTransformPtr transform) {
         return(-1);
     }
 
-#ifndef XMLSEC_OPENSSL_096
-    EVP_MD_CTX_init(&(ctx->digestCtx));
-#endif /* XMLSEC_OPENSSL_096 */
+    /* create digest CTX */
+    ctx->digestCtx = EVP_MD_CTX_new();
+    if(ctx->digestCtx == NULL) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
+                    "EVP_MD_CTX_new",
+                    XMLSEC_ERRORS_R_CRYPTO_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
 
+    /* done */
     return(0);
 }
 
@@ -212,9 +266,10 @@ xmlSecOpenSSLEvpDigestFinalize(xmlSecTransformPtr transform) {
     ctx = xmlSecOpenSSLEvpDigestGetCtx(transform);
     xmlSecAssert(ctx != NULL);
 
-#ifndef XMLSEC_OPENSSL_096
-    EVP_MD_CTX_cleanup(&(ctx->digestCtx));
-#endif /* XMLSEC_OPENSSL_096 */
+    if(ctx->digestCtx != NULL) {
+        EVP_MD_CTX_free(ctx->digestCtx);
+    }
+
     memset(ctx, 0, sizeof(xmlSecOpenSSLDigestCtx));
 }
 
@@ -280,10 +335,10 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
     ctx = xmlSecOpenSSLEvpDigestGetCtx(transform);
     xmlSecAssert2(ctx != NULL, -1);
     xmlSecAssert2(ctx->digest != NULL, -1);
+    xmlSecAssert2(ctx->digestCtx != NULL, -1);
 
     if(transform->status == xmlSecTransformStatusNone) {
-#ifndef XMLSEC_OPENSSL_096
-        ret = EVP_DigestInit(&(ctx->digestCtx), ctx->digest);
+        ret = EVP_DigestInit(ctx->digestCtx, ctx->digest);
         if(ret != 1) {
             xmlSecError(XMLSEC_ERRORS_HERE,
                         xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
@@ -292,9 +347,6 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
                         XMLSEC_ERRORS_NO_MESSAGE);
             return(-1);
         }
-#else /* XMLSEC_OPENSSL_096 */
-        EVP_DigestInit(&(ctx->digestCtx), ctx->digest);
-#endif /* XMLSEC_OPENSSL_096 */
         transform->status = xmlSecTransformStatusWorking;
     }
 
@@ -303,8 +355,7 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
 
         inSize = xmlSecBufferGetSize(in);
         if(inSize > 0) {
-#ifndef XMLSEC_OPENSSL_096
-            ret = EVP_DigestUpdate(&(ctx->digestCtx), xmlSecBufferGetData(in), inSize);
+            ret = EVP_DigestUpdate(ctx->digestCtx, xmlSecBufferGetData(in), inSize);
             if(ret != 1) {
                 xmlSecError(XMLSEC_ERRORS_HERE,
                             xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
@@ -313,9 +364,6 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
                             "size=%d", inSize);
                 return(-1);
             }
-#else /* XMLSEC_OPENSSL_096 */
-            EVP_DigestUpdate(&(ctx->digestCtx), xmlSecBufferGetData(in), inSize);
-#endif /* XMLSEC_OPENSSL_096 */
 
             ret = xmlSecBufferRemoveHead(in, inSize);
             if(ret < 0) {
@@ -332,8 +380,7 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
 
             xmlSecAssert2((xmlSecSize)EVP_MD_size(ctx->digest) <= sizeof(ctx->dgst), -1);
 
-#ifndef XMLSEC_OPENSSL_096
-            ret = EVP_DigestFinal(&(ctx->digestCtx), ctx->dgst, &dgstSize);
+            ret = EVP_DigestFinal(ctx->digestCtx, ctx->dgst, &dgstSize);
             if(ret != 1) {
                 xmlSecError(XMLSEC_ERRORS_HERE,
                             xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
@@ -342,9 +389,6 @@ xmlSecOpenSSLEvpDigestExecute(xmlSecTransformPtr transform, int last, xmlSecTran
                             XMLSEC_ERRORS_NO_MESSAGE);
                 return(-1);
             }
-#else /* XMLSEC_OPENSSL_096 */
-            EVP_DigestFinal(&(ctx->digestCtx), ctx->dgst, &dgstSize);
-#endif /* XMLSEC_OPENSSL_096 */
             xmlSecAssert2(dgstSize > 0, -1);
             ctx->dgstSize = XMLSEC_SIZE_BAD_CAST(dgstSize);
 
@@ -744,4 +788,92 @@ xmlSecOpenSSLTransformGostR3411_94GetKlass(void) {
     return(&xmlSecOpenSSLGostR3411_94Klass);
 }
 #endif /* XMLSEC_NO_GOST*/
+
+#ifndef XMLSEC_NO_GOST2012
+
+/******************************************************************************
+ *
+ * GOST R 34.11-2012 256 bit
+ *
+ *****************************************************************************/
+static xmlSecTransformKlass xmlSecOpenSSLGostR3411_2012_256Klass = {
+    /* klass/object sizes */
+    sizeof(xmlSecTransformKlass),               /* size_t klassSize */
+    xmlSecOpenSSLEvpDigestSize,                   /* size_t objSize */
+
+    xmlSecNameGostR3411_2012_256,               /* const xmlChar* name; */
+    xmlSecHrefGostR3411_2012_256,               /* const xmlChar* href; */
+    xmlSecTransformUsageDigestMethod,           /* xmlSecTransformUsage usage; */
+    xmlSecOpenSSLEvpDigestInitialize,             /* xmlSecTransformInitializeMethod initialize; */
+    xmlSecOpenSSLEvpDigestFinalize,               /* xmlSecTransformFinalizeMethod finalize; */
+    NULL,                                       /* xmlSecTransformNodeReadMethod readNode; */
+    NULL,                                       /* xmlSecTransformNodeWriteMethod writeNode; */
+    NULL,                                       /* xmlSecTransformSetKeyReqMethod setKeyReq; */
+    NULL,                                       /* xmlSecTransformSetKeyMethod setKey; */
+    xmlSecOpenSSLEvpDigestVerify,                 /* xmlSecTransformVerifyMethod verify; */
+    xmlSecTransformDefaultGetDataType,          /* xmlSecTransformGetDataTypeMethod getDataType; */
+    xmlSecTransformDefaultPushBin,              /* xmlSecTransformPushBinMethod pushBin; */
+    xmlSecTransformDefaultPopBin,               /* xmlSecTransformPopBinMethod popBin; */
+    NULL,                                       /* xmlSecTransformPushXmlMethod pushXml; */
+    NULL,                                       /* xmlSecTransformPopXmlMethod popXml; */
+    xmlSecOpenSSLEvpDigestExecute,                /* xmlSecTransformExecuteMethod execute; */
+    NULL,                                       /* void* reserved0; */
+    NULL,                                       /* void* reserved1; */
+};
+
+/**
+ * xmlSecOpenSSLTransformGostR3411_2012_256GetKlass:
+ *
+ * GOST R 34.11-2012 256 bit digest transform klass.
+ *
+ * Returns: pointer to GOST R 34.11-2012 256 bit digest transform klass.
+ */
+xmlSecTransformId
+xmlSecOpenSSLTransformGostR3411_2012_256GetKlass(void) {
+    return(&xmlSecOpenSSLGostR3411_2012_256Klass);
+}
+
+/******************************************************************************
+ *
+ * GOST R 34.11-2012 512 bit
+ *
+ *****************************************************************************/
+static xmlSecTransformKlass xmlSecOpenSSLGostR3411_2012_512Klass = {
+    /* klass/object sizes */
+    sizeof(xmlSecTransformKlass),               /* size_t klassSize */
+    xmlSecOpenSSLEvpDigestSize,                   /* size_t objSize */
+
+    xmlSecNameGostR3411_2012_512,               /* const xmlChar* name; */
+    xmlSecHrefGostR3411_2012_512,               /* const xmlChar* href; */
+    xmlSecTransformUsageDigestMethod,           /* xmlSecTransformUsage usage; */
+    xmlSecOpenSSLEvpDigestInitialize,             /* xmlSecTransformInitializeMethod initialize; */
+    xmlSecOpenSSLEvpDigestFinalize,               /* xmlSecTransformFinalizeMethod finalize; */
+    NULL,                                       /* xmlSecTransformNodeReadMethod readNode; */
+    NULL,                                       /* xmlSecTransformNodeWriteMethod writeNode; */
+    NULL,                                       /* xmlSecTransformSetKeyReqMethod setKeyReq; */
+    NULL,                                       /* xmlSecTransformSetKeyMethod setKey; */
+    xmlSecOpenSSLEvpDigestVerify,                 /* xmlSecTransformVerifyMethod verify; */
+    xmlSecTransformDefaultGetDataType,          /* xmlSecTransformGetDataTypeMethod getDataType; */
+    xmlSecTransformDefaultPushBin,              /* xmlSecTransformPushBinMethod pushBin; */
+    xmlSecTransformDefaultPopBin,               /* xmlSecTransformPopBinMethod popBin; */
+    NULL,                                       /* xmlSecTransformPushXmlMethod pushXml; */
+    NULL,                                       /* xmlSecTransformPopXmlMethod popXml; */
+    xmlSecOpenSSLEvpDigestExecute,                /* xmlSecTransformExecuteMethod execute; */
+    NULL,                                       /* void* reserved0; */
+    NULL,                                       /* void* reserved1; */
+};
+
+/**
+ * xmlSecOpenSSLTransformGostR3411_2012_512GetKlass:
+ *
+ * GOST R 34.11-2012 512 bit digest transform klass.
+ *
+ * Returns: pointer to GOST R 34.11-2012 512 bit digest transform klass.
+ */
+xmlSecTransformId
+xmlSecOpenSSLTransformGostR3411_2012_512GetKlass(void) {
+    return(&xmlSecOpenSSLGostR3411_2012_512Klass);
+}
+
+#endif /* XMLSEC_NO_GOST2012 */
 

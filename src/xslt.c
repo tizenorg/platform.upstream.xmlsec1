@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -584,7 +584,7 @@ xmlSecXsApplyStylesheet(xmlSecXsltCtxPtr ctx, xmlDocPtr doc) {
                     XMLSEC_ERRORS_R_XSLT_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
         goto done;
-    }	    
+    }
 
     /* set security prefs  */
     ret = xsltSetCtxtSecurityPrefs(g_xslt_default_security_prefs, xsltCtx);

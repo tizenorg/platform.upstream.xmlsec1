@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -161,7 +161,7 @@ xmlSecBase64CtxCreate(int encode, int columns) {
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecBase64Ctx)=%d",
-                    sizeof(xmlSecBase64Ctx));
+                    (int)sizeof(xmlSecBase64Ctx));
         return(NULL);
     }
 

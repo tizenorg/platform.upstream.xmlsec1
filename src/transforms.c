@@ -36,7 +36,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 
 #include "globals.h"
@@ -281,6 +281,16 @@ xmlSecTransformIdsRegisterDefault(void) {
         return(-1);
     }
 
+    if(xmlSecTransformIdsRegister(xmlSecTransformRelationshipId) < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecTransformIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "name=%s",
+                    xmlSecErrorsSafeString(xmlSecTransformKlassGetName(xmlSecTransformRelationshipId)));
+        return(-1);
+    }
+
 #ifndef XMLSEC_NO_XSLT
     if(xmlSecTransformIdsRegister(xmlSecTransformXsltId) < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
@@ -355,7 +365,7 @@ xmlSecTransformCtxCreate(void) {
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
-                    "size=%d", sizeof(xmlSecTransformCtx));
+                    "size=%d", (int)sizeof(xmlSecTransformCtx));
         return(NULL);
     }
 
@@ -876,7 +886,7 @@ xmlSecTransformCtxSetUri(xmlSecTransformCtxPtr ctx, const xmlChar* uri, xmlNodeP
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_STRDUP_FAILED,
-                    "size=%d", xptr - uri);
+                    "size=%d", (int)(xptr - uri));
         return(-1);
     }
 
@@ -932,6 +942,9 @@ xmlSecTransformCtxSetUri(xmlSecTransformCtxPtr ctx, const xmlChar* uri, xmlNodeP
                         XMLSEC_ERRORS_R_XMLSEC_FAILED,
                         "transform=%s",
                         xmlSecErrorsSafeString(xmlSecTransformKlassGetName(xmlSecTransformXPointerId)));
+            if(buf != NULL) {
+                xmlFree(buf);
+            }
             return(-1);
         }
 
@@ -965,6 +978,9 @@ xmlSecTransformCtxSetUri(xmlSecTransformCtxPtr ctx, const xmlChar* uri, xmlNodeP
                         XMLSEC_ERRORS_R_XMLSEC_FAILED,
                         "transform=%s",
                         xmlSecErrorsSafeString(xmlSecTransformKlassGetName(xmlSecTransformVisa3DHackId)));
+            if(buf != NULL) {
+                xmlFree(buf);
+            }
             return(-1);
         }
 
@@ -1195,6 +1211,18 @@ xmlSecTransformCtxUriExecute(xmlSecTransformCtxPtr ctx, const xmlChar* uri) {
         return(-1);
     }
 
+    /* Close to free up file handle */
+    ret = xmlSecTransformInputURIClose(uriTransform);
+    if(ret < 0) {
+		xmlSecError(XMLSEC_ERRORS_HERE,
+					NULL,
+					"xmlSecTransformInputURIClose",
+					XMLSEC_ERRORS_R_XMLSEC_FAILED,
+					"ret=%d", ret);
+		return(-1);
+	}
+
+    /* Done */
     ctx->status = xmlSecTransformStatusFinished;
     return(0);
 }
@@ -2810,7 +2838,7 @@ xmlSecTransformIOBufferCreate(xmlSecTransformIOBufferMode mode, xmlSecTransformP
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
-                    "size=%d", sizeof(xmlSecTransformIOBuffer));
+                    "size=%d", (int)sizeof(xmlSecTransformIOBuffer));
         return(NULL);
     }
     memset(buffer, 0, sizeof(xmlSecTransformIOBuffer));

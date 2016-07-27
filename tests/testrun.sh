@@ -144,6 +144,10 @@ execKeysTest() {
     key_name="$3"
     alg_name="$4"
 
+    if [ -n "$XMLSEC_TEST_NAME" -a "$XMLSEC_TEST_NAME" != "$key_name" ]; then
+        return
+    fi
+
     # prepare
     rm -f $tmpfile
     old_pwd=`pwd`
@@ -176,7 +180,7 @@ execKeysTest() {
     if [ -f $keysfile ] ; then
         params="$params --keys-file $keysfile"
     fi
-    echo "$xmlsec_app keys $params $xmlsec_params $keysfile" >>  $logfile 
+    echo "$VALGRIND $xmlsec_app keys $params $xmlsec_params $keysfile" >>  $logfile 
     $VALGRIND $xmlsec_app keys $params $xmlsec_params $keysfile >> $logfile 2>> $logfile
     printRes $expected_res $?
 
@@ -197,6 +201,10 @@ execDSigTest() {
     params1="$6"
     params2="$7"
     params3="$8"
+
+    if [ -n "$XMLSEC_TEST_NAME" -a "$XMLSEC_TEST_NAME" != "$filename" ]; then
+        return
+    fi
 
     # prepare
     rm -f $tmpfile
@@ -251,21 +259,21 @@ execDSigTest() {
     # run tests
     if [ -n "$params1" ] ; then
         printf "    Verify existing signature                            "
-        echo "$xmlsec_app verify $xmlsec_params $params1 $full_file.xml" >> $logfile
+        echo "$VALGRIND $xmlsec_app verify $xmlsec_params $params1 $full_file.xml" >> $logfile
         $VALGRIND $xmlsec_app verify $xmlsec_params $params1 $full_file.xml >> $logfile 2>> $logfile
         printRes $expected_res $?
     fi
 
     if [ -n "$params2" -a -z "$PERF_TEST" ] ; then
         printf "    Create new signature                                 "
-        echo "$xmlsec_app sign $xmlsec_params $params2 --output $tmpfile $full_file.tmpl" >> $logfile
+        echo "$VALGRIND $xmlsec_app sign $xmlsec_params $params2 --output $tmpfile $full_file.tmpl" >> $logfile
         $VALGRIND $xmlsec_app sign $xmlsec_params $params2 --output $tmpfile $full_file.tmpl >> $logfile 2>> $logfile
         printRes $expected_res $?
     fi
 
     if [ -n "$params3" -a -z "$PERF_TEST" ] ; then
         printf "    Verify new signature                                 "
-        echo "$xmlsec_app verify $xmlsec_params $params3 $tmpfile" >> $logfile
+        echo "$VALGRIND $xmlsec_app verify $xmlsec_params $params3 $tmpfile" >> $logfile
         $VALGRIND $xmlsec_app verify $xmlsec_params $params3 $tmpfile >> $logfile 2>> $logfile
         printRes $expected_res $?
     fi
@@ -286,6 +294,10 @@ execEncTest() {
     params1="$5"
     params2="$6"
     params3="$7"
+
+    if [ -n "$XMLSEC_TEST_NAME" -a "$XMLSEC_TEST_NAME" != "$filename" ]; then
+        return
+    fi
 
     # prepare
     rm -f $tmpfile $tmpfile.2
@@ -326,7 +338,7 @@ execEncTest() {
     if [ -n "$params1" ] ; then
         rm -f $tmpfile
         printf "    Decrypt existing document                            "
-        echo "$xmlsec_app decrypt $xmlsec_params $params1 $full_file.xml" >>  $logfile 
+        echo "$VALGRIND $xmlsec_app decrypt $xmlsec_params $params1 $full_file.xml" >>  $logfile 
         $VALGRIND $xmlsec_app decrypt $xmlsec_params $params1 $full_file.xml > $tmpfile 2>> $logfile
         res=$?
         if [ $res = 0 ]; then
@@ -340,7 +352,7 @@ execEncTest() {
     if [ -n "$params2" -a -z "$PERF_TEST" ] ; then
         rm -f $tmpfile
         printf "    Encrypt document                                     "
-        echo "$xmlsec_app encrypt $xmlsec_params $params2 --output $tmpfile $full_file.tmpl" >>  $logfile 
+        echo "$VALGRIND $xmlsec_app encrypt $xmlsec_params $params2 --output $tmpfile $full_file.tmpl" >>  $logfile 
         $VALGRIND $xmlsec_app encrypt $xmlsec_params $params2 --output $tmpfile $full_file.tmpl >> $logfile 2>> $logfile
         printRes $expected_res $?
     fi
@@ -348,7 +360,7 @@ execEncTest() {
     if [ -n "$params3" -a -z "$PERF_TEST" ] ; then 
         rm -f $tmpfile.2
         printf "    Decrypt new document                                 "
-        echo "$xmlsec_app decrypt $xmlsec_params $params3 --output $tmpfile.2 $tmpfile" >>  $logfile
+        echo "$VALGRIND $xmlsec_app decrypt $xmlsec_params $params3 --output $tmpfile.2 $tmpfile" >>  $logfile
         $VALGRIND $xmlsec_app decrypt $xmlsec_params $params3 --output $tmpfile.2 $tmpfile >> $logfile 2>> $logfile
         res=$?
         if [ $res = 0 ]; then
@@ -363,74 +375,6 @@ execEncTest() {
     cd $old_pwd
     rm -f $tmpfile $tmpfile.2
 }
-
-execXkmsServerRequestTest() {
-    expected_res="$1"
-    folder="$2"
-    filename="$3"
-    req_transforms="$4"
-    response="$5"
-    params1="$6"
-
-    # prepare
-    rm -f $tmpfile $tmpfile.2 tmpfile.3
-    old_pwd=`pwd`
-
-    # check params
-    if [ "z$expected_res" != "z$res_success" -a "z$expected_res" != "z$res_fail" ] ; then
-        echo " Bad parameter: expected_res=$expected_res"
-        cd $old_pwd
-        return
-    fi
-    if [ -n "$folder" ] ; then
-        cd $topfolder/$folder
-        full_file=$filename
-        full_resfile=$filename-$response
-        echo "$folder/$filename ($response)"
-        echo "Test: $folder/$filename in folder " `pwd` " $response ($expected_res)" >> $logfile
-    else
-        full_file=$topfolder/$filename
-        full_resfile=$topfolder/$filename-$response
-        echo "$filename ($response)"
-        echo "Test: $folder/$filename $response ($expected_res)" >> $logfile
-    fi
-
-    # check transforms
-    if [ -n "$req_transforms" ] ; then
-        printf "    Checking required transforms                         "
-        echo "$xmlsec_app check-transforms $xmlsec_params $req_transforms" >> $logfile
-        $xmlsec_app check-transforms $xmlsec_params $req_transforms >> $logfile 2>> $logfile
-        res=$?
-        if [ $res = 0 ]; then
-            echo "   OK"
-        else
-            echo " Skip"
-            return
-        fi
-    fi
-
-    # run tests
-    if [ -n "$params1" ] ; then
-        printf "    Processing xkms request                              "
-        echo "$xmlsec_app --xkms-server-request --output $tmpfile $xmlsec_params $params1 $full_file.xml" >> $logfile
-        $VALGRIND $xmlsec_app --xkms-server-request  --output $tmpfile $xmlsec_params $params1 $full_file.xml >> $logfile 2>> $logfile
-        res=$?
-        if [ $res = 0 ]; then
-            # cleanup Id attribute because it is generated every time
-            sed 's/ Id="[^\"]*"/ Id=""/g' $full_resfile > $tmpfile.2
-            sed 's/ Id="[^\"]*"/ Id=""/g' $tmpfile > $tmpfile.3
-            diff $tmpfile.2 $tmpfile.3 >> $logfile 2>> $logfile
-            printRes $expected_res $?
-        else
-            printRes $expected_res $res
-        fi
-    fi
-
-    # cleanup
-    cd $old_pwd
-    rm -f $tmpfile $tmpfile.2 tmpfile.3
-}
-
 
 # prepare
 rm -rf $tmpfile $tmpfile.2 tmpfile.3

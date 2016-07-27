@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -91,7 +91,7 @@ xmlSecXPathDataCreate(xmlSecXPathDataType type) {
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecXPathData)=%d",
-                    sizeof(xmlSecXPathData));
+                    (int)sizeof(xmlSecXPathData));
         return(NULL);
     }
     memset(data, 0, sizeof(xmlSecXPathData));
@@ -285,17 +285,17 @@ xmlSecXPathDataExecute(xmlSecXPathDataPtr data, xmlDocPtr doc, xmlNodePtr hereNo
     to reserve NULL for our own purposes so we simply create an empty
     node set here */
     if(xpathObj->nodesetval == NULL) {
-	xpathObj->nodesetval = xmlXPathNodeSetCreate(NULL);
-	if(xpathObj->nodesetval == NULL) {
-		xmlXPathFreeObject(xpathObj);
-		xmlSecError(XMLSEC_ERRORS_HERE,
-			NULL,
+    	xpathObj->nodesetval = xmlXPathNodeSetCreate(NULL);
+    	if(xpathObj->nodesetval == NULL) {
+    		xmlXPathFreeObject(xpathObj);
+    		xmlSecError(XMLSEC_ERRORS_HERE,
+        				NULL,
                         "xmlXPathNodeSetCreate",
                         XMLSEC_ERRORS_R_XML_FAILED,
                         "expr=%s",
                         xmlSecErrorsSafeString(data->expr));
-            	return(NULL);
-	}
+    		return(NULL);
+    	}
     }
 
     nodes = xmlSecNodeSetCreate(doc, xpathObj->nodesetval, data->nodeSetType);
@@ -613,7 +613,7 @@ xmlSecTransformXPathNodeRead(xmlSecTransformPtr transform, xmlNodePtr node, xmlS
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "size=%d",
-                    xmlStrlen(data->expr) + strlen(xpathPattern) + 1);
+                    (int)(xmlStrlen(data->expr) + strlen(xpathPattern) + 1));
         return(-1);
     }
     sprintf((char*)tmp, xpathPattern, (char*)data->expr);
@@ -1160,6 +1160,3 @@ xmlSecTransformVisa3DHackExecute(xmlSecTransformPtr transform, int last,
     }
     return(0);
 }
-
-
-

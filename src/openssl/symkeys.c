@@ -7,7 +7,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -181,11 +181,9 @@ xmlSecOpenSSLSymKeyDataKlassCheck(xmlSecKeyDataKlass* klass) {
 #endif /* XMLSEC_NO_DES */
 
 #ifndef XMLSEC_NO_AES
-#ifndef XMLSEC_OPENSSL_096
     if(klass == xmlSecOpenSSLKeyDataAesId) {
         return(1);
     }
-#endif /* XMLSEC_OPENSSL_096 */
 #endif /* XMLSEC_NO_AES */
 
 #ifndef XMLSEC_NO_HMAC
@@ -198,7 +196,6 @@ xmlSecOpenSSLSymKeyDataKlassCheck(xmlSecKeyDataKlass* klass) {
 }
 
 #ifndef XMLSEC_NO_AES
-#ifndef XMLSEC_OPENSSL_096
 /**************************************************************************
  *
  * <xmlsec:AESKeyValue> processing
@@ -277,8 +274,6 @@ xmlSecOpenSSLKeyDataAesSet(xmlSecKeyDataPtr data, const xmlSecByte* buf, xmlSecS
 
     return(xmlSecBufferSetData(buffer, buf, bufSize));
 }
-
-#endif /* XMLSEC_OPENSSL_096 */
 #endif /* XMLSEC_NO_AES */
 
 #ifndef XMLSEC_NO_DES

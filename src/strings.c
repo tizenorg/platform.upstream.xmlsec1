@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -22,7 +22,6 @@
 const xmlChar xmlSecNs[]                        = "http://www.aleksey.com/xmlsec/2002";
 const xmlChar xmlSecDSigNs[]                    = "http://www.w3.org/2000/09/xmldsig#";
 const xmlChar xmlSecEncNs[]                     = "http://www.w3.org/2001/04/xmlenc#";
-const xmlChar xmlSecXkmsNs[]                    = "http://www.w3.org/2002/03/xkms#";
 const xmlChar xmlSecXPathNs[]                   = "http://www.w3.org/TR/1999/REC-xpath-19991116";
 const xmlChar xmlSecXPath2Ns[]                  = "http://www.w3.org/2002/06/xmldsig-filter2";
 const xmlChar xmlSecXPointerNs[]                = "http://www.w3.org/2001/04/xmldsig-more/xptr";
@@ -65,126 +64,6 @@ const xmlChar xmlSecNodeCarriedKeyName[]        = "CarriedKeyName";
 
 const xmlChar xmlSecTypeEncContent[]            = "http://www.w3.org/2001/04/xmlenc#Content";
 const xmlChar xmlSecTypeEncElement[]            = "http://www.w3.org/2001/04/xmlenc#Element";
-
-/*************************************************************************
- *
- * XKMS Nodes
- *
- ************************************************************************/
-#ifndef XMLSEC_NO_XKMS
-const xmlChar xmlSecXkmsServerRequestResultName[]       = "result-response";
-const xmlChar xmlSecXkmsServerRequestStatusName[]       = "status-request";
-const xmlChar xmlSecXkmsServerRequestLocateName[]       = "locate-request";
-const xmlChar xmlSecXkmsServerRequestValidateName[]     = "validate-request";
-const xmlChar xmlSecXkmsServerRequestCompoundName[]     = "compound-request";
-
-const xmlChar xmlSecNodeResult[]                = "Result";
-const xmlChar xmlSecNodeStatusRequest[]         = "StatusRequest";
-const xmlChar xmlSecNodeStatusResult[]          = "StatusResult";
-const xmlChar xmlSecNodeLocateRequest[]         = "LocateRequest";
-const xmlChar xmlSecNodeLocateResult[]          = "LocateResult";
-const xmlChar xmlSecNodeValidateRequest[]       = "ValidateRequest";
-const xmlChar xmlSecNodeValidateResult[]        = "ValidateResult";
-const xmlChar xmlSecNodeCompoundRequest[]       = "CompoundRequest";
-const xmlChar xmlSecNodeCompoundResult[]        = "CompoundResult";
-
-const xmlChar xmlSecNodeMessageExtension[]      = "MessageExtension";
-const xmlChar xmlSecNodeOpaqueClientData[]      = "OpaqueClientData";
-const xmlChar xmlSecNodeResponseMechanism[]     = "ResponseMechanism";
-const xmlChar xmlSecNodeRespondWith[]           = "RespondWith";
-const xmlChar xmlSecNodePendingNotification[]   = "PendingNotification";
-const xmlChar xmlSecNodeQueryKeyBinding[]       = "QueryKeyBinding";
-const xmlChar xmlSecNodeKeyUsage[]              = "KeyUsage";
-const xmlChar xmlSecNodeUseKeyWith[]            = "UseKeyWith";
-const xmlChar xmlSecNodeTimeInstant[]           = "TimeInstant";
-const xmlChar xmlSecNodeRequestSignatureValue[] = "RequestSignatureValue";
-const xmlChar xmlSecNodeUnverifiedKeyBinding[]  = "UnverifiedKeyBinding";
-const xmlChar xmlSecNodeValidityInterval[]      = "ValidityInterval";
-const xmlChar xmlSecNodeStatus[]                = "Status";
-const xmlChar xmlSecNodeValidReason[]           = "ValidReason";
-const xmlChar xmlSecNodeInvalidReason[]         = "InvalidReason";
-const xmlChar xmlSecNodeIndeterminateReason[]   = "IndeterminateReason";
-
-const xmlChar xmlSecAttrService[]               = "Service";
-const xmlChar xmlSecAttrNonce[]                 = "Nonce";
-const xmlChar xmlSecAttrOriginalRequestId[]     = "OriginalRequestId";
-const xmlChar xmlSecAttrResponseLimit[]         = "ResponseLimit";
-const xmlChar xmlSecAttrMechanism[]             = "Mechanism[";
-const xmlChar xmlSecAttrIdentifier[]            = "Identifier";
-const xmlChar xmlSecAttrApplication[]           = "Application";
-const xmlChar xmlSecAttrResultMajor[]           = "ResultMajor";
-const xmlChar xmlSecAttrResultMinor[]           = "ResultMinor";
-const xmlChar xmlSecAttrRequestId[]             = "RequestId";
-const xmlChar xmlSecAttrNotBefore[]             = "NotBefore";
-const xmlChar xmlSecAttrNotOnOrAfter[]          = "NotOnOrAfter";
-const xmlChar xmlSecAttrTime[]                  = "Time";
-const xmlChar xmlSecAttrStatusValue[]           = "StatusValue";
-
-const xmlChar xmlSecResponseMechanismPending[]  = "Pending";
-const xmlChar xmlSecResponseMechanismRepresent[]= "Represent";
-const xmlChar xmlSecResponseMechanismRequestSignatureValue[] = "RequestSignatureValue";
-
-const xmlChar xmlSecRespondWithKeyName[]        = "KeyName";
-const xmlChar xmlSecRespondWithKeyValue[]       = "KeyValue";
-const xmlChar xmlSecRespondWithX509Cert[]       = "X509Cert";
-const xmlChar xmlSecRespondWithX509Chain[]      = "X509Chain";
-const xmlChar xmlSecRespondWithX509CRL[]        = "X509CRL";
-const xmlChar xmlSecRespondWithOCSP[]           = "OCSP";
-const xmlChar xmlSecRespondWithRetrievalMethod[]= "RetrievalMethod";
-const xmlChar xmlSecRespondWithPGP[]            = "PGP";
-const xmlChar xmlSecRespondWithPGPWeb[]         = "PGPWeb";
-const xmlChar xmlSecRespondWithSPKI[]           = "SPKI";
-const xmlChar xmlSecRespondWithPrivateKey[]     = "PrivateKey";
-
-const xmlChar xmlSecStatusResultSuccess[]       = "Success";
-const xmlChar xmlSecStatusResultFailed[]        = "Failed";
-const xmlChar xmlSecStatusResultPending[]       = "Pending";
-
-const xmlChar xmlSecKeyUsageEncryption[]        = "Encryption";
-const xmlChar xmlSecKeyUsageSignature[]         = "Signature";
-const xmlChar xmlSecKeyUsageExchange[]          = "Exchange";
-
-const xmlChar xmlSecKeyBindingStatusValid[]             = "Valid";
-const xmlChar xmlSecKeyBindingStatusInvalid[]           = "Invalid";
-const xmlChar xmlSecKeyBindingStatusIndeterminate[]     = "Indeterminate";
-
-const xmlChar xmlSecKeyBindingReasonIssuerTrust[]       = "IssuerTrust";
-const xmlChar xmlSecKeyBindingReasonRevocationStatus[]  = "RevocationStatus";
-const xmlChar xmlSecKeyBindingReasonValidityInterval[]  = "ValidityInterval";
-const xmlChar xmlSecKeyBindingReasonSignature[]         = "Signature";
-
-const xmlChar xmlSecResultMajorCodeSuccess[]            = "Success";
-const xmlChar xmlSecResultMajorCodeVersionMismatch[]    = "VersionMismatch";
-const xmlChar xmlSecResultMajorCodeSender[]             = "Sender";
-const xmlChar xmlSecResultMajorCodeReceiver[]           = "Receiver";
-const xmlChar xmlSecResultMajorCodeRepresent[]          = "Represent";
-const xmlChar xmlSecResultMajorCodePending[]            = "Pending";
-
-const xmlChar xmlSecResultMinorCodeNoMatch[]            = "NoMatch";
-const xmlChar xmlSecResultMinorCodeTooManyResponses[]   = "TooManyResponses";
-const xmlChar xmlSecResultMinorCodeIncomplete[]         = "Incomplete";
-const xmlChar xmlSecResultMinorCodeFailure[]            = "Failure";
-const xmlChar xmlSecResultMinorCodeRefused[]            = "Refused";
-const xmlChar xmlSecResultMinorCodeNoAuthentication[]   = "NoAuthentication";
-const xmlChar xmlSecResultMinorCodeMessageNotSupported[]= "MessageNotSupported";
-const xmlChar xmlSecResultMinorCodeUnknownResponseId[]  = "UnknownResponseId";
-const xmlChar xmlSecResultMinorCodeNotSynchronous[]     = "NotSynchronous";
-
-const xmlChar xmlSecXkmsSoapSubcodeValueMessageNotSupported[] = "MessageNotSupported";
-const xmlChar xmlSecXkmsSoapSubcodeValueBadMessage[]    = "BadMessage";
-
-const xmlChar xmlSecXkmsSoapFaultReasonLang[]               = "en";
-const xmlChar xmlSecXkmsSoapFaultReasonUnsupportedVersion[] = "Unsupported SOAP version";
-const xmlChar xmlSecXkmsSoapFaultReasonUnableToProcess[]    = "Unable to process %s";
-const xmlChar xmlSecXkmsSoapFaultReasonServiceUnavailable[] = "Service temporarily unable";
-const xmlChar xmlSecXkmsSoapFaultReasonMessageNotSupported[]= "%s message not supported";
-const xmlChar xmlSecXkmsSoapFaultReasonMessageInvalid[]     = "%s message invalid";
-
-const xmlChar xmlSecXkmsFormatStrPlain[]                = "plain";
-const xmlChar xmlSecXkmsFormatStrSoap11[]               = "soap-1.1";
-const xmlChar xmlSecXkmsFormatStrSoap12[]               = "soap-1.2";
-
-#endif /* XMLSEC_NO_XKMS */
 
 /*************************************************************************
  *
@@ -301,6 +180,26 @@ const xmlChar xmlSecHrefGOST2001KeyValue[]              = "http://www.w3.org/200
 
 const xmlChar xmlSecNameGost2001GostR3411_94[]          = "gostr34102001-gostr3411";
 const xmlChar xmlSecHrefGost2001GostR3411_94[]          = "http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411";
+
+/*************************************************************************
+ *
+ * GOST R 34.10-2012 strings
+ *
+ ************************************************************************/
+const xmlChar xmlSecNameGostR3410_2012_256KeyValue[]              = "gostr34102012-256";
+const xmlChar xmlSecNodeGostR3410_2012_256KeyValue[]              = "gostr34102012-256";
+const xmlChar xmlSecHrefGostR3410_2012_256KeyValue[]              = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-256";
+
+const xmlChar xmlSecNameGostR3410_2012_512KeyValue[]              = "gostr34102012-512";
+const xmlChar xmlSecNodeGostR3410_2012_512KeyValue[]              = "gostr34102012-512";
+const xmlChar xmlSecHrefGostR3410_2012_512KeyValue[]              = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-512";
+
+/* see http://tools.ietf.org/html/draft-chudov-cryptopro-cpxmldsig-09#section-6.6 */
+const xmlChar xmlSecNameGostR3410_2012GostR3411_2012_256[]    = "gostr34102012-gostr34112012-256";
+const xmlChar xmlSecHrefGostR3410_2012GostR3411_2012_256[]    = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-256";
+
+const xmlChar xmlSecNameGostR3410_2012GostR3411_2012_512[]    = "gostr34102012-gostr34112012-512";
+const xmlChar xmlSecHrefGostR3410_2012GostR3411_2012_512[]    = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-512";
 
 /*************************************************************************
  *
@@ -504,6 +403,20 @@ const xmlChar xmlSecHrefGostR3411_94[]                  = "http://www.w3.org/200
 
 /*************************************************************************
  *
+ * GOST R 34.11-2012 strings
+ *
+ ************************************************************************/
+
+/* see http://tools.ietf.org/html/draft-chudov-cryptopro-cpxmldsig-09#section-6.2 */
+const xmlChar xmlSecNameGostR3411_2012_256[]                  = "gostr34112012-256";
+const xmlChar xmlSecHrefGostR3411_2012_256[]                  = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34112012-256";
+
+const xmlChar xmlSecNameGostR3411_2012_512[]                  = "gostr34112012-512";
+const xmlChar xmlSecHrefGostR3411_2012_512[]                  = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34112012-512";
+
+
+/*************************************************************************
+ *
  * SHA1 strings
  *
  ************************************************************************/
@@ -578,6 +491,21 @@ const xmlChar xmlSecXPath2FilterUnion[]         = "union";
 
 const xmlChar xmlSecNameXPointer[]              = "xpointer";
 const xmlChar xmlSecNodeXPointer[]              = "XPointer";
+
+/*************************************************************************
+ *
+ * Relationship strings
+ *
+ ************************************************************************/
+const xmlChar xmlSecNameRelationship[]          = "relationship";
+const xmlChar xmlSecHrefRelationship[]          = "http://schemas.openxmlformats.org/package/2006/RelationshipTransform";
+const xmlChar xmlSecNodeRelationship[]          = "Relationship";
+const xmlChar xmlSecNodeRelationshipReference[] = "RelationshipReference";
+const xmlChar xmlSecRelationshipsNs[]           = "http://schemas.openxmlformats.org/package/2006/relationships";
+const xmlChar xmlSecRelationshipReferenceNs[]   = "http://schemas.openxmlformats.org/package/2006/digital-signature";
+const xmlChar xmlSecRelationshipAttrId[]        = "Id";
+const xmlChar xmlSecRelationshipAttrSourceId[]  = "SourceId";
+const xmlChar xmlSecRelationshipAttrTargetMode[]= "TargetMode";
 
 /*************************************************************************
  *

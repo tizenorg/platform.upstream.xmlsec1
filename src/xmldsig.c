@@ -8,7 +8,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -39,13 +39,17 @@
 static int      xmlSecDSigCtxProcessSignatureNode       (xmlSecDSigCtxPtr dsigCtx,
                                                          xmlNodePtr node);
 static int      xmlSecDSigCtxProcessSignedInfoNode      (xmlSecDSigCtxPtr dsigCtx,
-                                                         xmlNodePtr node);
+                                                         xmlNodePtr node,
+                                                         xmlNodePtr * firstReferenceNode);
 static int      xmlSecDSigCtxProcessKeyInfoNode         (xmlSecDSigCtxPtr dsigCtx,
                                                          xmlNodePtr node);
 static int      xmlSecDSigCtxProcessObjectNode          (xmlSecDSigCtxPtr dsigCtx,
                                                          xmlNodePtr node);
 static int      xmlSecDSigCtxProcessManifestNode        (xmlSecDSigCtxPtr dsigCtx,
                                                          xmlNodePtr node);
+
+static int      xmlSecDSigCtxProcessReferences          (xmlSecDSigCtxPtr dsigCtx,
+                                                         xmlNodePtr firstReferenceNode);
 
 /* The ID attribute in XMLDSig is 'Id' */
 static const xmlChar*           xmlSecDSigIds[] = { xmlSecAttrId, NULL };
@@ -73,7 +77,7 @@ xmlSecDSigCtxCreate(xmlSecKeysMngrPtr keysMngr) {
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecDSigCtx)=%d",
-                    sizeof(xmlSecDSigCtx));
+                    (int)sizeof(xmlSecDSigCtx));
         return(NULL);
     }
 
@@ -160,10 +164,26 @@ xmlSecDSigCtxInitialize(xmlSecDSigCtxPtr dsigCtx, xmlSecKeysMngrPtr keysMngr) {
     }
 
     /* references lists from SignedInfo and Manifest elements */
-    xmlSecPtrListInitialize(&(dsigCtx->signedInfoReferences),
-                            xmlSecDSigReferenceCtxListId);
-    xmlSecPtrListInitialize(&(dsigCtx->manifestReferences),
-                            xmlSecDSigReferenceCtxListId);
+    ret = xmlSecPtrListInitialize(&(dsigCtx->signedInfoReferences),
+                                  xmlSecDSigReferenceCtxListId);
+    if(ret != 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecPtrListInitialize",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(ret);
+    }
+    ret = xmlSecPtrListInitialize(&(dsigCtx->manifestReferences),
+                                  xmlSecDSigReferenceCtxListId);
+    if(ret != 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecPtrListInitialize",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(ret);
+    }
 
     dsigCtx->enabledReferenceUris = xmlSecTransformUriTypeAny;
     return(0);
@@ -454,6 +474,7 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     xmlSecTransformDataType firstType;
     xmlNodePtr signedInfoNode = NULL;
     xmlNodePtr keyInfoNode = NULL;
+    xmlNodePtr firstReferenceNode = NULL;
     xmlNodePtr cur;
     int ret;
 
@@ -542,7 +563,7 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     }
 
     /* now validated all the references and prepare transform */
-    ret = xmlSecDSigCtxProcessSignedInfoNode(dsigCtx, signedInfoNode);
+    ret = xmlSecDSigCtxProcessSignedInfoNode(dsigCtx, signedInfoNode, &firstReferenceNode);
     if(ret < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
@@ -551,15 +572,12 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
                     XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
-    /* references processing might change the status */
-    if(dsigCtx->status != xmlSecDSigStatusUnknown) {
-        return(0);
-    }
 
     /* as the result, we should have sign and c14n methods set */
     xmlSecAssert2(dsigCtx->signMethod != NULL, -1);
     xmlSecAssert2(dsigCtx->c14nMethod != NULL, -1);
 
+    /* now read key info node */
     ret = xmlSecDSigCtxProcessKeyInfoNode(dsigCtx, keyInfoNode);
     if(ret < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
@@ -571,6 +589,21 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     }
     /* as the result, we should have a key */
     xmlSecAssert2(dsigCtx->signKey != NULL, -1);
+
+    /* now actually process references and calculate digests */
+    ret = xmlSecDSigCtxProcessReferences(dsigCtx, firstReferenceNode);
+    if(ret < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "xmlSecDSigCtxProcessReferences",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+    /* references processing might change the status */
+    if(dsigCtx->status != xmlSecDSigStatusUnknown) {
+        return(0);
+    }
 
     /* if we need to write result to xml node then we need base64 encode result */
     if(dsigCtx->operation == xmlSecTransformOperationSign) {
@@ -667,18 +700,18 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
  *
  */
 static int
-xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
-    xmlSecDSigReferenceCtxPtr dsigRefCtx;
+xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, xmlNodePtr * firstReferenceNode) {
+    xmlSecSize refNodesCount = 0;
     xmlNodePtr cur;
-    int ret;
 
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
     xmlSecAssert2(dsigCtx->signMethod == NULL, -1);
     xmlSecAssert2(dsigCtx->c14nMethod == NULL, -1);
     xmlSecAssert2((dsigCtx->operation == xmlSecTransformOperationSign) || (dsigCtx->operation == xmlSecTransformOperationVerify), -1);
-    xmlSecAssert2(xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences)) == 0, -1);
     xmlSecAssert2(node != NULL, -1);
+    xmlSecAssert2(firstReferenceNode != NULL, -1);
+    xmlSecAssert2((*firstReferenceNode) == NULL, -1);
 
     /* first node is required CanonicalizationMethod. */
     cur = xmlSecGetNextElementNode(node->children);
@@ -772,9 +805,71 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     }
     dsigCtx->signMethod->operation = dsigCtx->operation;
 
-    /* calculate references */
-    cur = xmlSecGetNextElementNode(cur->next);
+    /* read references */
+    if(cur != NULL) {
+        cur = xmlSecGetNextElementNode(cur->next);
+    }
     while((cur != NULL) && (xmlSecCheckNodeName(cur, xmlSecNodeReference, xmlSecDSigNs))) {
+        /* record first reference node */
+        if((*firstReferenceNode) == NULL) {
+            (*firstReferenceNode) = cur;
+        }
+        ++refNodesCount;
+
+        /* go to next */
+        cur = xmlSecGetNextElementNode(cur->next);
+    }
+
+    /* check that we have at least one Reference */
+    if(refNodesCount == 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    NULL,
+                    XMLSEC_ERRORS_R_DSIG_NO_REFERENCES,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+
+    /* if there is something left than it's an error */
+    if(cur != NULL) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    xmlSecErrorsSafeString(xmlSecNodeGetName(cur)),
+                    XMLSEC_ERRORS_R_UNEXPECTED_NODE,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+
+    /* done */
+    return(0);
+}
+
+
+static int
+xmlSecDSigCtxProcessReferences(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr firstReferenceNode) {
+    xmlSecDSigReferenceCtxPtr dsigRefCtx;
+    xmlNodePtr cur;
+    int ret;
+
+    xmlSecAssert2(dsigCtx != NULL, -1);
+    xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
+    xmlSecAssert2((dsigCtx->operation == xmlSecTransformOperationSign) || (dsigCtx->operation == xmlSecTransformOperationVerify), -1);
+    xmlSecAssert2(xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences)) == 0, -1);
+    xmlSecAssert2(firstReferenceNode != NULL, -1);
+
+    /* process references */
+    for(cur = firstReferenceNode; (cur != NULL); cur = xmlSecGetNextElementNode(cur->next)) {
+        /* already checked but we trust none */
+        if(!xmlSecCheckNodeName(cur, xmlSecNodeReference, xmlSecDSigNs)) {
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        xmlSecErrorsSafeString(xmlSecNodeGetName(cur)),
+                        XMLSEC_ERRORS_R_INVALID_NODE,
+                        "expected=%s",
+                        xmlSecErrorsSafeString(xmlSecNodeReference));
+            return(-1);
+        }
+
         /* create reference */
         dsigRefCtx = xmlSecDSigReferenceCtxCreate(dsigCtx, xmlSecDSigReferenceOriginSignedInfo);
         if(dsigRefCtx == NULL) {
@@ -815,30 +910,12 @@ xmlSecDSigCtxProcessSignedInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
             dsigCtx->status = xmlSecDSigStatusInvalid;
             return(0);
         }
-        cur = xmlSecGetNextElementNode(cur->next);
     }
 
-    /* check that we have at least one Reference */
-    if(xmlSecPtrListGetSize(&(dsigCtx->signedInfoReferences)) == 0) {
-        xmlSecError(XMLSEC_ERRORS_HERE,
-                    NULL,
-                    NULL,
-                    XMLSEC_ERRORS_R_DSIG_NO_REFERENCES,
-                    XMLSEC_ERRORS_NO_MESSAGE);
-        return(-1);
-    }
-
-    /* if there is something left than it's an error */
-    if(cur != NULL) {
-        xmlSecError(XMLSEC_ERRORS_HERE,
-                    NULL,
-                    xmlSecErrorsSafeString(xmlSecNodeGetName(cur)),
-                    XMLSEC_ERRORS_R_UNEXPECTED_NODE,
-                    XMLSEC_ERRORS_NO_MESSAGE);
-        return(-1);
-    }
+    /* done */
     return(0);
 }
+
 
 static int
 xmlSecDSigCtxProcessKeyInfoNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
@@ -1118,9 +1195,9 @@ xmlSecDSigCtxDebugDump(xmlSecDSigCtxPtr dsigCtx, FILE* output) {
        (xmlSecBufferGetData(dsigCtx->result) != NULL)) {
 
         fprintf(output, "== Result - start buffer:\n");
-        fwrite(xmlSecBufferGetData(dsigCtx->result),
-               xmlSecBufferGetSize(dsigCtx->result),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(dsigCtx->result),
+                     xmlSecBufferGetSize(dsigCtx->result),
+                     1, output);
         fprintf(output, "\n== Result - end buffer\n");
     }
     if(((dsigCtx->flags & XMLSEC_DSIG_FLAGS_STORE_SIGNATURE) != 0) &&
@@ -1128,9 +1205,9 @@ xmlSecDSigCtxDebugDump(xmlSecDSigCtxPtr dsigCtx, FILE* output) {
        (xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)) != NULL)) {
 
         fprintf(output, "== PreSigned data - start buffer:\n");
-        fwrite(xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
-               xmlSecBufferGetSize(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
+                     xmlSecBufferGetSize(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
+                     1, output);
         fprintf(output, "\n== PreSigned data - end buffer\n");
     }
 }
@@ -1207,9 +1284,9 @@ xmlSecDSigCtxDebugXmlDump(xmlSecDSigCtxPtr dsigCtx, FILE* output) {
        (xmlSecBufferGetData(dsigCtx->result) != NULL)) {
 
         fprintf(output, "<Result>");
-        fwrite(xmlSecBufferGetData(dsigCtx->result),
-               xmlSecBufferGetSize(dsigCtx->result),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(dsigCtx->result),
+                     xmlSecBufferGetSize(dsigCtx->result),
+                     1, output);
         fprintf(output, "</Result>\n");
     }
     if(((dsigCtx->flags & XMLSEC_DSIG_FLAGS_STORE_SIGNATURE) != 0) &&
@@ -1217,9 +1294,9 @@ xmlSecDSigCtxDebugXmlDump(xmlSecDSigCtxPtr dsigCtx, FILE* output) {
        (xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)) != NULL)) {
 
         fprintf(output, "<PreSignedData>");
-        fwrite(xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
-               xmlSecBufferGetSize(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
+                     xmlSecBufferGetSize(xmlSecDSigCtxGetPreSignBuffer(dsigCtx)),
+                     1, output);
         fprintf(output, "</PreSignedData>\n");
     }
 
@@ -1260,7 +1337,7 @@ xmlSecDSigReferenceCtxCreate(xmlSecDSigCtxPtr dsigCtx, xmlSecDSigReferenceOrigin
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecDSigReferenceCtx)=%d",
-                    sizeof(xmlSecDSigReferenceCtx));
+                    (int)sizeof(xmlSecDSigReferenceCtx));
         return(NULL);
     }
 
@@ -1669,9 +1746,9 @@ xmlSecDSigReferenceCtxDebugDump(xmlSecDSigReferenceCtxPtr dsigRefCtx, FILE* outp
        (xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)) != NULL)) {
 
         fprintf(output, "== PreDigest data - start buffer:\n");
-        fwrite(xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
-               xmlSecBufferGetSize(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
+                     xmlSecBufferGetSize(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
+                     1, output);
         fprintf(output, "\n== PreDigest data - end buffer\n");
     }
 
@@ -1679,9 +1756,9 @@ xmlSecDSigReferenceCtxDebugDump(xmlSecDSigReferenceCtxPtr dsigRefCtx, FILE* outp
        (xmlSecBufferGetData(dsigRefCtx->result) != NULL)) {
 
         fprintf(output, "== Result - start buffer:\n");
-        fwrite(xmlSecBufferGetData(dsigRefCtx->result),
-               xmlSecBufferGetSize(dsigRefCtx->result), 1,
-               output);
+        (void)fwrite(xmlSecBufferGetData(dsigRefCtx->result),
+                     xmlSecBufferGetSize(dsigRefCtx->result), 1,
+                     output);
         fprintf(output, "\n== Result - end buffer\n");
     }
 }
@@ -1742,9 +1819,9 @@ xmlSecDSigReferenceCtxDebugXmlDump(xmlSecDSigReferenceCtxPtr dsigRefCtx, FILE* o
        (xmlSecBufferGetData(dsigRefCtx->result) != NULL)) {
 
         fprintf(output, "<Result>");
-        fwrite(xmlSecBufferGetData(dsigRefCtx->result),
-               xmlSecBufferGetSize(dsigRefCtx->result), 1,
-               output);
+        (void)fwrite(xmlSecBufferGetData(dsigRefCtx->result),
+                     xmlSecBufferGetSize(dsigRefCtx->result), 1,
+                     output);
         fprintf(output, "</Result>\n");
     }
 
@@ -1752,9 +1829,9 @@ xmlSecDSigReferenceCtxDebugXmlDump(xmlSecDSigReferenceCtxPtr dsigRefCtx, FILE* o
        (xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)) != NULL)) {
 
         fprintf(output, "<PreDigestData>");
-        fwrite(xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
-               xmlSecBufferGetSize(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
-               1, output);
+        (void)fwrite(xmlSecBufferGetData(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
+                     xmlSecBufferGetSize(xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx)),
+                     1, output);
         fprintf(output, "</PreDigestData>\n");
     }
     if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {

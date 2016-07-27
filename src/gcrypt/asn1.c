@@ -4,7 +4,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -304,9 +304,11 @@ xmlSecGCryptParseDer(const xmlSecByte * der, xmlSecSize derlen,
         case 3:
             /* Public RSA */
             type = xmlSecGCryptDerKeyTypePublicRsa;
+            break;
         case 5:
             /* Public DSA */
             type = xmlSecGCryptDerKeyTypePublicDsa;
+            break;
         case 6:
             /* Private DSA */
             type = xmlSecGCryptDerKeyTypePrivateDsa;

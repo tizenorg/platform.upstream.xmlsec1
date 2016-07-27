@@ -8,7 +8,7 @@
  * distribution for preciese wording.
  *
  * Copyright (C) 2003 Cordys R&D BV, All rights reserved.
- * Copyright (C) 2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2003-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -1183,10 +1183,12 @@ xmlSecMSCryptoX509GetCertName(const xmlChar * name) {
                     "xmlSecMSCryptoConvertUtf8ToTstr",
                     XMLSEC_ERRORS_R_XMLSEC_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
+        xmlFree(name2);
         return(NULL);
     }
 
     /* done */
+    xmlFree(name2);
     return(res);
 }
 

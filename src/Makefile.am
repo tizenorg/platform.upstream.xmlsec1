@@ -2,8 +2,9 @@ NULL =
 
 SUBDIRS = . $(XMLSEC_CRYPTO_LIST)
 
-INCLUDES = \
+AM_CFLAGS = \
 	-DPACKAGE=\"@PACKAGE@\" \
+	-DXMLSEC_DEFAULT_CRYPTO=\"@XMLSEC_DEFAULT_CRYPTO@\" \
 	-I../include \
 	-I$(top_srcdir)/include \
 	$(XMLSEC_DEFINES) \
@@ -44,12 +45,12 @@ libxmlsec1_la_SOURCES = \
 	membuf.c \
 	nodeset.c \
 	parser.c \
+	relationship.c \
 	soap.c \
 	strings.c \
 	templates.c \
 	transforms.c \
 	x509.c \
-	xkms.c \
 	xmldsig.c \
 	xmlenc.c \
 	xmlsec.c \

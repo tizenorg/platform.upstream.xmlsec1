@@ -39,7 +39,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -227,7 +227,7 @@ xmlSecKeyInfoCtxCreate(xmlSecKeysMngrPtr keysMngr) {
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
-                    "size=%d", sizeof(xmlSecKeyInfoCtx));
+                    "size=%d", (int)sizeof(xmlSecKeyInfoCtx));
         return(NULL);
     }
 
@@ -761,7 +761,16 @@ xmlSecKeyDataNameXmlRead(xmlSecKeyDataId id, xmlSecKeyPtr key, xmlNodePtr node, 
 
     /* finally set key name if it is not there */
     if(xmlSecKeyGetName(key) == NULL) {
-        xmlSecKeySetName(key, newName);
+        ret = xmlSecKeySetName(key, newName);
+        if(ret < 0) {
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        xmlSecErrorsSafeString(xmlSecKeyDataKlassGetName(id)),
+                        "xmlSecKeySetName",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        XMLSEC_ERRORS_NO_MESSAGE);
+            xmlFree(newName);
+            return(-1);
+        }
     }
     xmlFree(newName);
     return(0);

@@ -7,7 +7,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -1751,7 +1751,6 @@ xmlSecOpenSSLX509CertGetTime(ASN1_TIME* t, time_t* res) {
     xmlSecAssert2(res != NULL, -1);
 
     (*res) = 0;
-#ifndef XMLSEC_OPENSSL_096
     if(!ASN1_TIME_check(t)) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
@@ -1760,7 +1759,6 @@ xmlSecOpenSSLX509CertGetTime(ASN1_TIME* t, time_t* res) {
                     XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
-#endif /* XMLSEC_OPENSSL_096 */
 
     memset(&tm, 0, sizeof(tm));
 
@@ -1941,7 +1939,7 @@ xmlSecOpenSSLX509CertBase64DerWrite(X509* cert, int base64LineWrap) {
 
     /* todo: add error checks */
     i2d_X509_bio(mem, cert);
-    BIO_flush(mem);
+    (void)BIO_flush(mem);
 
     size = BIO_get_mem_data(mem, &p);
     if((size <= 0) || (p == NULL)){
@@ -2055,7 +2053,7 @@ xmlSecOpenSSLX509CrlBase64DerWrite(X509_CRL* crl, int base64LineWrap) {
 
     /* todo: add error checks */
     i2d_X509_CRL_bio(mem, crl);
-    BIO_flush(mem);
+    (void)BIO_flush(mem);
 
     size = BIO_get_mem_data(mem, &p);
     if((size <= 0) || (p == NULL)){
@@ -2111,7 +2109,7 @@ xmlSecOpenSSLX509NameWrite(X509_NAME* nm) {
         return(NULL);
     }
 
-    BIO_flush(mem); /* should call flush ? */
+    (void)BIO_flush(mem); /* should call flush ? */
 
     size = BIO_pending(mem);
     res = xmlMalloc(size + 1);
@@ -2218,21 +2216,21 @@ xmlSecOpenSSLX509SKIWrite(X509* cert) {
                     "X509V3_EXT_d2i",
                     XMLSEC_ERRORS_R_CRYPTO_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
-        M_ASN1_OCTET_STRING_free(keyId);
+        ASN1_OCTET_STRING_free(keyId);
         return(NULL);
     }
 
-    res = xmlSecBase64Encode(M_ASN1_STRING_data(keyId), M_ASN1_STRING_length(keyId), 0);
+    res = xmlSecBase64Encode(ASN1_STRING_data(keyId), ASN1_STRING_length(keyId), 0);
     if(res == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
                     "xmlSecBase64Encode",
                     XMLSEC_ERRORS_R_XMLSEC_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
-        M_ASN1_OCTET_STRING_free(keyId);
+        ASN1_OCTET_STRING_free(keyId);
         return(NULL);
     }
-    M_ASN1_OCTET_STRING_free(keyId);
+    ASN1_OCTET_STRING_free(keyId);
 
     return(res);
 }

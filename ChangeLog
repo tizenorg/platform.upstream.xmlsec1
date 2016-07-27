@@ -1,8 +1,77 @@
+2016-04-20 Aleksey Sanin  <aleksey@aleksey.com>
+	* Restored SOAP support for Lasso
+	* 1.2.22 release
+
+2016-04-12 Aleksey Sanin  <aleksey@aleksey.com>
+        * 1.2.21 release
+
+2016-02-17 Aleksey Sanin  <aleksey@aleksey.com>
+        * Added OOXML Relationships Transform Algorithm (patch from Miklos Vajna)
+
+2016-02-06 Aleksey Sanin  <aleksey@aleksey.com>
+        * Deprecated XMLSEC_CRYPTO define in favor of xmlSecGetDefaultCrypto() function
+
+2016-02-05 Aleksey Sanin  <aleksey@aleksey.com>
+        * Revamped manpages/documentation build to completely pass 'make distcheck' tests
+
+2016-01-28 Aleksey Sanin  <aleksey@aleksey.com>
+        * Added OpenSSL 1.1.0 API support (major refactoring for block ciphers and DSA/ECDSA signatures)
+
+2016-01-28 Aleksey Sanin  <aleksey@aleksey.com>
+        * Migrated to GitHub (https://github.com/lsh123/xmlsec)
+
+2015-03-10 Aleksey Sanin  <aleksey@aleksey.com>
+        * Removed support for legacy OpenSSL 0.9.6 (last release: March, 2004) and 0.9.7 (last release: February, 2007) 
+
+2014-10-2014 Aleksey Sanin  <aleksey@aleksey.com>
+        * Added experimental GOST2012 support (patch from Nikolay Shaplov)
+
+2014-06-04 Aleksey Sanin  <aleksey@aleksey.com>
+        * Fixed several compaints from Clang and Coverity (based on patches from Simo Sorce) 
+
+2014-02-25 Aleksey Sanin  <aleksey@aleksey.com>
+        * Removed XKMS support -- it was never completed and not worth keeping
+
+2013-05-23 Aleksey Sanin  <aleksey@aleksey.com>
+        * 1.2.20 release
+        
+2014-05-23  Aleksey Sanin  <aleksey@aleksey.com>
+        * fix build on MacOSX (bug #680307)
+        * update certs for examples (bug #674572)
+        * update test certs to be valid till 2114
+        * don't create files on xmlsec-mscrypto when loading the key (bug #633924)
+        * clarify min OpenSSL requirements
+
+2014-05-23  Aleksey Sanin  <aleksey@aleksey.com>
+        * better detect private keys on ext RSA engines (bug #728213)
+        * fixed CRL check
+
+2014-02-17  Aleksey Sanin  <aleksey@aleksey.com>
+        * fixes for RH 6x
+
+2013-07-19  Aleksey Sanin  <aleksey@aleksey.com>
+        * fixed switch - added missed break keywords (bug #704574)
+
+2013-06-03  Aleksey Sanin  <aleksey@aleksey.com>
+        * fix memory leak in converting cert subject
+
+2013-05-09  Aleksey Sanin  <aleksey@aleksey.com>
+        * disable network access during internal xml transform parser
+
+2013-04-12  Aleksey Sanin  <aleksey@aleksey.com>
+        * fix typo (fixed bug 695605)
+
+2013-03-28  Aleksey Sanin  <aleksey@aleksey.com>
+        * disable ECDSA if needed (Daniel)
+
+2013-03-24  Aleksey Sanin  <aleksey@aleksey.com>
+        * docs rebuild
+
 2013-03-24 Aleksey Sanin  <aleksey@aleksey.com>
-	* 1.2.19 release
+        * 1.2.19 release
 
 2013-01-18 Aleksey Sanin  <aleksey@aleksey.com>
-	* Added support for DSA-SHA256, ECDSA-SHA1, ECDSA-SHA224, ECDSA-SHA256, ECDSA-SHA384, ECDSA-SHA512 (Mak Kolybabi)
+        * Added support for DSA-SHA256, ECDSA-SHA1, ECDSA-SHA224, ECDSA-SHA256, ECDSA-SHA384, ECDSA-SHA512 (Mak Kolybabi)
 
 2011-09-06  Aleksey Sanin  <aleksey@aleksey.com>
         * GOST support for xmlsec-openssl (patch from Dmitry Belyavsky)
@@ -1118,7 +1187,7 @@ Mon 07 Jul 2003 08:05:18 AM PDT Aleksey Sanin  <aleksey@aleksey.com>
 
 Mon 07 Jul 2003 07:02:46 AM PDT Aleksey Sanin  <aleksey@aleksey.com>
     
-	* Makefile.am: fixed test suite problem when builddir != sourcedir
+	* Makefile.am: fixed test suite problem when builddir != srcdir
 	(reported by Roumen)
 
 Thu Jul  3 07:57:25 2003  Aleksey Sanin  <aleksey@aleksey.com>
