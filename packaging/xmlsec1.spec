@@ -1,6 +1,6 @@
 %define keepstatic 1
 Name:           xmlsec1
-Version:        1.2.19
+Version:        1.2.22
 Release:        0
 License:        MIT
 Summary:        Library providing support for "XML Signature" and "XML Encryption" standards
