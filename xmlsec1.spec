@@ -1,6 +1,6 @@
 Summary: Library providing support for "XML Signature" and "XML Encryption" standards
 Name: xmlsec1
-Version: 1.2.19
+Version: 1.2.22
 Release: 1
 License: MIT
 Group: Development/Libraries
@@ -12,7 +12,7 @@ BuildRoot: %{_tmppath}/xmlsec1-%{version}-root
 URL: http://www.aleksey.com/xmlsec
 Requires: libxml2 >= 2.7.4
 Requires: libxslt >= 1.0.20
-Requires: ltdl
+Requires: libtool-ltdl
 BuildRequires: libxml2-devel >= 2.7.4
 BuildRequires: libxslt-devel >= 1.0.20
 Prefix: %{_prefix}
@@ -32,8 +32,9 @@ Group: Development/Libraries
 Requires: xmlsec1 = %{version}
 Requires: libxml2-devel >= 2.7.4
 Requires: libxslt-devel >= 1.0.20
-Requires: openssl-devel >= 0.9.6
-Requires: zlib-devel 
+Requires: openssl-devel >= 0.9.8
+Requires: zlib-devel
+Requires: libtool-ltdl-devel
 
 %description devel
 Libraries, includes, etc. you can use to develop applications with XML Digital 
@@ -45,8 +46,8 @@ Group: Development/Libraries
 Requires: xmlsec1 = %{version}
 Requires: libxml2 >= 2.7.4
 Requires: libxslt >= 1.0.20
-Requires: openssl >= 0.9.6
-BuildRequires: openssl-devel >= 0.9.6
+Requires: openssl >= 0.9.8
+BuildRequires: openssl-devel >= 0.9.8
 
 %description openssl
 OpenSSL plugin for XML Security Library provides OpenSSL based crypto services
@@ -60,8 +61,8 @@ Requires: xmlsec1-devel = %{version}
 Requires: xmlsec1-openssl = %{version}
 Requires: libxml2-devel >= 2.7.4
 Requires: libxslt-devel >= 1.0.20
-Requires: openssl >= 0.9.6
-Requires: openssl-devel >= 0.9.6
+Requires: openssl >= 0.9.8
+Requires: openssl-devel >= 0.9.8
 
 %description openssl-devel
 Libraries, includes, etc. for developing XML Security applications with OpenSSL

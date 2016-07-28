@@ -5,7 +5,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -89,7 +89,7 @@ XMLSEC_PTR_TO_FUNC_IMPL(xmlSecCryptoGetFunctionsCallback)
 static xmlSecCryptoDLLibraryPtr
 xmlSecCryptoDLLibraryCreate(const xmlChar* name) {
     xmlSecCryptoDLLibraryPtr lib;
-    xmlSecCryptoGetFunctionsCallback * getFunctions;
+    xmlSecCryptoGetFunctionsCallback * getFunctions = NULL;
 
     xmlSecAssert2(name != NULL, NULL);
 
@@ -102,7 +102,7 @@ xmlSecCryptoDLLibraryCreate(const xmlChar* name) {
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
-                    "size=%d", sizeof(lib));
+                    "size=%d", (int)sizeof(lib));
         return(NULL);
     }
     memset(lib, 0, sizeof(xmlSecCryptoDLLibrary));
@@ -429,9 +429,10 @@ xmlSecCryptoDLShutdown(void) {
 
 /**
  * xmlSecCryptoDLLoadLibrary:
- * @crypto:             the desired crypto library name ("openssl", "nss", ...).
+ * @crypto:             the desired crypto library name ("openssl", "nss", ...). If NULL
+ *                      then the default crypto engine will be used.
  *
- * Loads the xmlsec-<crypto> library. This function is NOT thread safe,
+ * Loads the xmlsec-$crypto library. This function is NOT thread safe,
  * application MUST NOT call #xmlSecCryptoDLLoadLibrary, #xmlSecCryptoDLGetLibraryFunctions,
  * and #xmlSecCryptoDLUnloadLibrary functions from multiple threads.
  *
@@ -442,9 +443,8 @@ xmlSecCryptoDLLoadLibrary(const xmlChar* crypto) {
     xmlSecCryptoDLFunctionsPtr functions;
     int ret;
 
-    xmlSecAssert2(crypto != NULL, -1);
-
-    functions = xmlSecCryptoDLGetLibraryFunctions(crypto);
+    /* if crypto is not specified, then used default */
+    functions = xmlSecCryptoDLGetLibraryFunctions((crypto != NULL ) ? crypto : xmlSecGetDefaultCrypto());
     if(functions == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
@@ -463,6 +463,7 @@ xmlSecCryptoDLLoadLibrary(const xmlChar* crypto) {
                     XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
+
     return(0);
 }
 
@@ -470,7 +471,7 @@ xmlSecCryptoDLLoadLibrary(const xmlChar* crypto) {
  * xmlSecCryptoDLGetLibraryFunctions:
  * @crypto:             the desired crypto library name ("openssl", "nss", ...).
  *
- * Loads the xmlsec-<crypto> library and gets global crypto functions/transforms/keys data/keys store
+ * Loads the xmlsec-$crypto library and gets global crypto functions/transforms/keys data/keys store
  * table. This function is NOT thread safe, application MUST NOT call #xmlSecCryptoDLLoadLibrary,
  * #xmlSecCryptoDLGetLibraryFunctions, and #xmlSecCryptoDLUnloadLibrary functions from multiple threads.
  *
@@ -523,7 +524,7 @@ xmlSecCryptoDLGetLibraryFunctions(const xmlChar* crypto) {
  * xmlSecCryptoDLUnloadLibrary:
  * @crypto:             the desired crypto library name ("openssl", "nss", ...).
  *
- * Unloads the xmlsec-<crypto> library. All pointers to this library
+ * Unloads the xmlsec-$crypto library. All pointers to this library
  * functions tables became invalid. This function is NOT thread safe,
  * application MUST NOT call #xmlSecCryptoDLLoadLibrary, #xmlSecCryptoDLGetLibraryFunctions,
  * and #xmlSecCryptoDLUnloadLibrary functions from multiple threads.
@@ -650,7 +651,22 @@ xmlSecCryptoDLFunctionsRegisterKeyDataAndTransforms(struct _xmlSecCryptoDLFuncti
                     XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
-    if((functions->keyDataHmacGetKlass != NULL) && (xmlSecKeyDataIdsRegister(functions->keyDataHmacGetKlass()) < 0)) {
+    if((functions->keyDataGostR3410_2012_256GetKlass != NULL) && (xmlSecKeyDataIdsRegister(functions->keyDataGostR3410_2012_256GetKlass()) < 0)) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecKeyDataKlassGetName(functions->keyDataGostR3410_2012_256GetKlass())),
+                    "xmlSecKeyDataIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+    if((functions->keyDataGostR3410_2012_512GetKlass != NULL) && (xmlSecKeyDataIdsRegister(functions->keyDataGostR3410_2012_512GetKlass()) < 0)) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecKeyDataKlassGetName(functions->keyDataGostR3410_2012_512GetKlass())),
+                    "xmlSecKeyDataIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }    if((functions->keyDataHmacGetKlass != NULL) && (xmlSecKeyDataIdsRegister(functions->keyDataHmacGetKlass()) < 0)) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecKeyDataKlassGetName(functions->keyDataHmacGetKlass())),
                     "xmlSecKeyDataIdsRegister",
@@ -764,6 +780,24 @@ xmlSecCryptoDLFunctionsRegisterKeyDataAndTransforms(struct _xmlSecCryptoDLFuncti
     if((functions->transformGost2001GostR3411_94GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformGost2001GostR3411_94GetKlass()) < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformGost2001GostR3411_94GetKlass())),
+                    "xmlSecTransformIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+
+    if((functions->transformGostR3410_2012GostR3411_2012_256GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformGostR3410_2012GostR3411_2012_256GetKlass()) < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformGostR3410_2012GostR3411_2012_256GetKlass())),
+                    "xmlSecTransformIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+
+    if((functions->transformGostR3410_2012GostR3411_2012_512GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformGostR3410_2012GostR3411_2012_512GetKlass()) < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformGostR3410_2012GostR3411_2012_512GetKlass())),
                     "xmlSecTransformIdsRegister",
                     XMLSEC_ERRORS_R_XMLSEC_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
@@ -1004,6 +1038,23 @@ xmlSecCryptoDLFunctionsRegisterKeyDataAndTransforms(struct _xmlSecCryptoDLFuncti
         return(-1);
     }
 
+    if((functions->transformGostR3411_2012_256GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformGostR3411_2012_256GetKlass()) < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformGostR3411_2012_256GetKlass())),
+                    "xmlSecTransformIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
+
+    if((functions->transformGostR3411_2012_512GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformGostR3411_2012_512GetKlass()) < 0) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformGostR3411_2012_512GetKlass())),
+                    "xmlSecTransformIdsRegister",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(-1);
+    }
     if((functions->transformSha1GetKlass != NULL) && xmlSecTransformIdsRegister(functions->transformSha1GetKlass()) < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecTransformKlassGetName(functions->transformSha1GetKlass())),

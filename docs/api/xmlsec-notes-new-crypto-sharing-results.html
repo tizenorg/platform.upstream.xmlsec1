@@ -36,8 +36,31 @@
 .navigation .title {
     font-size: 200%;
 }</style>
+<style type="text/css">
+table.CALSTABLE > tbody > tr:nth-child(1) > td:nth-child(1) {
+    width: 20em;
+}
+.synopsis, .classsynopsis {
+    background: #eeeeee;
+    border: solid 1px #aaaaaa;
+}
+.programlisting {
+    background: #eeeeee;
+    border: solid 1px #000000;
+}
+.navigation {
+    background: #eeeeee;
+    border: solid 1px #000000;
+}
+.navigation a {
+    color: initial;
+}
+.navigation a:visited {
+    color: initial;
+}
+</style>
 </head>
-<body><table witdh="100%" valign="top"><tr valign="top">
+<body><table width="100%" valign="top"><tr valign="top">
 <td valign="top" align="left" width="210">
 <img src="../images/logo.gif" alt="XML Security Library" border="0"><p></p>
 <ul>
@@ -78,11 +101,11 @@
 </td>
 <td valign="top"><table width="100%" valign="top"><tr><td valign="top" align="left" id="xmlsecContent">
 <table width="100%" class="navigation" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
-<td><a accesskey="p" href="xmlsec-notes-new-crypto-simple-keys-mngr.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="xmlsec-notes-new-crypto.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<td><a accesskey="p" href="xmlsec-notes-new-crypto-simple-keys-mngr.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="xmlsec-notes-new-crypto.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <th width="100%" align="center">XML Security Library Reference Manual</th>
-<td><a accesskey="n" href="xmlsec-examples.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="xmlsec-examples.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <br clear="all"><div class="SECT1">
 <h1 class="SECT1"><a name="XMLSEC-NOTES-NEW-CRYPTO-SHARING-RESULTS">Sharing the results.</a></h1>
@@ -93,29 +116,11 @@
 	and will use your library. Of course, you'll get all the credits 
 	for your work.
 	</p>
-<p>The best way to submit your enchancements is to provide a diff 
-	with the current CVS version. In order to do this, 
+<p>The best way to submit your enchancements is to send a pull request
+	through <a href="https://github.com/lsh123/xmlsec" target="_top">GitHub</a>.
+    I will try to review and merge your pool request as soon as possible.
 	</p>
-<p></p>
-<ul>
-<li><p>Checkout the sources from <a href="http://developer.gnome.org/tools/cvs.html" target="_top">GNOME CVS</a>
-	(module name is "xmlsec").
-	</p></li>
-<li><p>Add all the new files with "cvs add" command (this will not 
-	create files in CVS but mark them as "added" localy). You'll not be able
-	to create new folders without a valid GNOME CVS account, let me know
-	what you need and I'll be happy to help.
-	</p></li>
-<li><p>Get a diff of all existing and new files using 
-	"cvs -z3 diff -u -N" command.
-	</p></li>
-<li><p>Send the resulting diff file to the xmlsec mailing list
-	with some information about yourself so I can update the authors 
-	and coping information.
-	</p></li>
-</ul>
-	I will try to review and check in your patch as soon as possible.
-	</div>
+</div>
 <table class="navigation" width="100%" summary="Navigation footer" cellpadding="2" cellspacing="2"><tr valign="middle">
 <td align="left"><a accesskey="p" href="xmlsec-notes-new-crypto-simple-keys-mngr.html"><b>&lt;&lt;&lt; Default keys manager.</b></a></td>
 <td align="right"><a accesskey="n" href="xmlsec-examples.html"><b>Examples. &gt;&gt;&gt;</b></a></td>

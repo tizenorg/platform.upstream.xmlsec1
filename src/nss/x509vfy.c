@@ -233,7 +233,8 @@ xmlSecNssX509StoreVerify(xmlSecKeyDataStorePtr store, CERTCertList* certs,
                         NULL,
                         XMLSEC_ERRORS_R_CERT_ISSUER_FAILED,
                         "cert with subject name %s could not be verified because the issuer's cert is expired/invalid or not found",
-                        cert->subjectName);
+                        (cert != NULL) ? cert->subjectName : "(NULL)"
+            );
             break;
         case SEC_ERROR_EXPIRED_CERTIFICATE:
             xmlSecError(XMLSEC_ERRORS_HERE,
@@ -241,7 +242,8 @@ xmlSecNssX509StoreVerify(xmlSecKeyDataStorePtr store, CERTCertList* certs,
                         NULL,
                         XMLSEC_ERRORS_R_CERT_HAS_EXPIRED,
                         "cert with subject name %s has expired",
-                        cert->subjectName);
+                        (cert != NULL) ? cert->subjectName : "(NULL)"
+            );
             break;
         case SEC_ERROR_REVOKED_CERTIFICATE:
             xmlSecError(XMLSEC_ERRORS_HERE,
@@ -249,15 +251,16 @@ xmlSecNssX509StoreVerify(xmlSecKeyDataStorePtr store, CERTCertList* certs,
                         NULL,
                         XMLSEC_ERRORS_R_CERT_REVOKED,
                         "cert with subject name %s has been revoked",
-                        cert->subjectName);
+                        (cert != NULL) ? cert->subjectName : "(NULL)"
+            );
             break;
         default:
             xmlSecError(XMLSEC_ERRORS_HERE,
                         xmlSecErrorsSafeString(xmlSecKeyDataStoreGetName(store)),
                         NULL,
                         XMLSEC_ERRORS_R_CERT_VERIFY_FAILED,
-                                                "cert with subject name %s could not be verified, errcode %d",
-                                                cert->subjectName,
+                        "cert with subject name %s could not be verified, errcode %d",
+                        (cert != NULL) ? cert->subjectName : "(NULL)",
                         PORT_GetError());
             break;
     }
@@ -690,11 +693,10 @@ xmlSecNssX509NameRead(xmlSecByte *str, int len) {
                 }
                 memcpy(p, value, valueLen);
                 p+=valueLen;
-                if (len > 0)
+                if (len > 0) {
                     *p++=',';
+                }
             }
-        } else {
-            valueLen = 0;
         }
         if(len > 0) {
             ++str; --len;

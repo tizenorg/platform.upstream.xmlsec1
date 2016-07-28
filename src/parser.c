@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -157,8 +157,9 @@ xmlSecParserPushBin(xmlSecTransformPtr transform, const xmlSecByte* data,
         }
 
         /* required for c14n! */
-        ctx->parserCtx->loadsubset = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
+        ctx->parserCtx->loadsubset      = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
         ctx->parserCtx->replaceEntities = 1;
+        ctx->parserCtx->options         = XML_PARSE_NONET;
 
         transform->status = xmlSecTransformStatusWorking;
     } else if(transform->status == xmlSecTransformStatusFinished) {
@@ -316,7 +317,7 @@ xmlSecParserPopXml(xmlSecTransformPtr transform, xmlSecNodeSetPtr* nodes,
     }
 
     ret = inputPush(ctxt, input);
-    if(input == NULL) {
+    if(ret < 0) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
                     "inputPush",

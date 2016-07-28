@@ -7,13 +7,13 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2010 Aleksey Sanin, All rights reserved.
+ * Copyright (C) 2010-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #ifndef __XMLSEC_MSCRYPTO_PRIVATE_H__
 #define __XMLSEC_MSCRYPTO_PRIVATE_H__
 
 #ifndef XMLSEC_PRIVATE
-#error "private.h file contains private xmlsec definitions and should not be used outside xmlsec or xmlsec-<crypto> libraries"
+#error "private.h file contains private xmlsec definitions and should not be used outside xmlsec or xmlsec-$crypto libraries"
 #endif /* XMLSEC_PRIVATE */
 
 #if defined(__MINGW32__)

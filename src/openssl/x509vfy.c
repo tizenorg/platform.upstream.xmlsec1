@@ -7,7 +7,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -37,6 +37,11 @@
 #include <xmlsec/openssl/evp.h>
 #include <xmlsec/openssl/x509.h>
 
+/* new API from OpenSSL 1.1.0 */
+#if !defined(XMLSEC_OPENSSL_110)
+#define X509_REVOKED_get0_serialNumber(x) ((x)->serialNumber)
+#endif /* !defined(XMLSEC_OPENSSL_110) */
+
 /**************************************************************************
  *
  * Internal OpenSSL X509 store CTX
@@ -48,10 +53,7 @@ struct _xmlSecOpenSSLX509StoreCtx {
     X509_STORE*         xst;
     STACK_OF(X509)*     untrusted;
     STACK_OF(X509_CRL)* crls;
-
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
     X509_VERIFY_PARAM * vpm;
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
 };
 
 /****************************************************************************
@@ -107,10 +109,12 @@ static int              xmlSecOpenSSLX509NameStringRead                 (xmlSecB
                                                                          int ingoreTrailingSpaces);
 static int              xmlSecOpenSSLX509NamesCompare                   (X509_NAME *a,
                                                                          X509_NAME *b);
-static int              xmlSecOpenSSLX509_NAME_cmp                      (const X509_NAME * a,
-                                                                         const X509_NAME * b);
+static STACK_OF(X509_NAME_ENTRY)*  xmlSecOpenSSLX509_NAME_ENTRIES_copy  (X509_NAME *a);
+static int              xmlSecOpenSSLX509_NAME_ENTRIES_cmp              (STACK_OF(X509_NAME_ENTRY) * a,
+                                                                         STACK_OF(X509_NAME_ENTRY) * b);
 static int              xmlSecOpenSSLX509_NAME_ENTRY_cmp                (const X509_NAME_ENTRY * const *a,
                                                                          const X509_NAME_ENTRY * const *b);
+
 
 /**
  * xmlSecOpenSSLX509StoreGetKlass:
@@ -178,7 +182,7 @@ xmlSecOpenSSLX509StoreVerify(xmlSecKeyDataStorePtr store, XMLSEC_STACK_OF_X509* 
     X509 * cert;
     X509 * err_cert = NULL;
     char buf[256];
-    int err = 0, depth;
+    int err = 0;
     int i;
     int ret;
 
@@ -287,49 +291,41 @@ xmlSecOpenSSLX509StoreVerify(xmlSecKeyDataStorePtr store, XMLSEC_STACK_OF_X509* 
         if(xmlSecOpenSSLX509FindNextChainCert(certs2, cert) == NULL) {
             X509_STORE_CTX xsc;
 
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
-            X509_VERIFY_PARAM * vpm = NULL;
-            unsigned long vpm_flags = 0;
-
-            vpm = X509_VERIFY_PARAM_new();
-            if(vpm == NULL) {
-                xmlSecError(XMLSEC_ERRORS_HERE,
-                            xmlSecErrorsSafeString(xmlSecKeyDataStoreGetName(store)),
-                            "X509_VERIFY_PARAM_new",
-                            XMLSEC_ERRORS_R_CRYPTO_FAILED,
-                            XMLSEC_ERRORS_NO_MESSAGE);
-                goto done;
-            }
-            vpm_flags = vpm->flags;
-/*
-            vpm_flags &= (~X509_V_FLAG_X509_STRICT);
-*/
-            vpm_flags &= (~X509_V_FLAG_CRL_CHECK);
-
-            X509_VERIFY_PARAM_set_depth(vpm, 9);
-            X509_VERIFY_PARAM_set_flags(vpm, vpm_flags);
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
-
-
             X509_STORE_CTX_init (&xsc, ctx->xst, cert, certs2);
-
             if(keyInfoCtx->certsVerificationTime > 0) {
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
-                vpm_flags |= X509_V_FLAG_USE_CHECK_TIME;
-                X509_VERIFY_PARAM_set_time(vpm, keyInfoCtx->certsVerificationTime);
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
                 X509_STORE_CTX_set_time(&xsc, 0, keyInfoCtx->certsVerificationTime);
             }
 
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
-            X509_STORE_CTX_set0_param(&xsc, vpm);
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
+            {
+                X509_VERIFY_PARAM * vpm = NULL;
+                unsigned long vpm_flags = 0;
+
+                vpm = X509_VERIFY_PARAM_new();
+                if(vpm == NULL) {
+                    xmlSecError(XMLSEC_ERRORS_HERE,
+                                xmlSecErrorsSafeString(xmlSecKeyDataStoreGetName(store)),
+                                "X509_VERIFY_PARAM_new",
+                                XMLSEC_ERRORS_R_CRYPTO_FAILED,
+                                XMLSEC_ERRORS_NO_MESSAGE);
+                    goto done;
+                }
+                vpm_flags = X509_VERIFY_PARAM_get_flags(vpm);
+                vpm_flags &= (~X509_V_FLAG_CRL_CHECK);
+
+                if(keyInfoCtx->certsVerificationTime > 0) {
+                    vpm_flags |= X509_V_FLAG_USE_CHECK_TIME;
+                    X509_VERIFY_PARAM_set_time(vpm, keyInfoCtx->certsVerificationTime);
+                }
+
+                X509_VERIFY_PARAM_set_depth(vpm, 9);
+                X509_VERIFY_PARAM_set_flags(vpm, vpm_flags);
+                X509_STORE_CTX_set0_param(&xsc, vpm);
+            }
 
 
             ret         = X509_verify_cert(&xsc);
             err_cert    = X509_STORE_CTX_get_current_cert(&xsc);
             err         = X509_STORE_CTX_get_error(&xsc);
-            depth       = X509_STORE_CTX_get_error_depth(&xsc);
 
             X509_STORE_CTX_cleanup (&xsc);
             if(ret != 1 && keyInfoCtx->flags & XMLSEC_KEYINFO_FLAGS_ALLOW_BROKEN_CHAIN){
@@ -688,7 +684,6 @@ xmlSecOpenSSLX509StoreInitialize(xmlSecKeyDataStorePtr store) {
         return(-1);
     }
 
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
     ctx->vpm = X509_VERIFY_PARAM_new();
     if(ctx->vpm == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
@@ -701,9 +696,6 @@ xmlSecOpenSSLX509StoreInitialize(xmlSecKeyDataStorePtr store) {
     X509_VERIFY_PARAM_set_depth(ctx->vpm, 9); /* the default cert verification path in openssl */
     X509_STORE_set1_param(ctx->xst, ctx->vpm);
 
-#else  /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
-    ctx->xst->depth = 9; /* the default cert verification path in openssl */
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
 
     return(0);
 }
@@ -726,11 +718,9 @@ xmlSecOpenSSLX509StoreFinalize(xmlSecKeyDataStorePtr store) {
     if(ctx->crls != NULL) {
         sk_X509_CRL_pop_free(ctx->crls, X509_CRL_free);
     }
-#if !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097)
     if(ctx->vpm != NULL) {
         X509_VERIFY_PARAM_free(ctx->vpm);
     }
-#endif /* !defined(XMLSEC_OPENSSL_096) && !defined(XMLSEC_OPENSSL_097) */
 
     memset(ctx, 0, sizeof(xmlSecOpenSSLX509StoreCtx));
 }
@@ -910,10 +900,10 @@ xmlSecOpenSSLX509FindCert(STACK_OF(X509) *certs, xmlChar *subjectName,
                 keyId = X509V3_EXT_d2i(ext);
                 if((keyId != NULL) && (keyId->length == len) &&
                                     (memcmp(keyId->data, ski, len) == 0)) {
-                    M_ASN1_OCTET_STRING_free(keyId);
+                    ASN1_OCTET_STRING_free(keyId);
                     return(cert);
                 }
-                M_ASN1_OCTET_STRING_free(keyId);
+                ASN1_OCTET_STRING_free(keyId);
             }
         }
     }
@@ -955,6 +945,7 @@ xmlSecOpenSSLX509VerifyCertAgainstCrls(STACK_OF(X509_CRL) *crls, X509* cert) {
      * Try to retrieve a CRL corresponding to the issuer of
      * the current certificate
      */
+    issuer = X509_get_issuer_name(cert);
     n = sk_X509_CRL_num(crls);
     for(i = 0; i < n; i++) {
         crl = sk_X509_CRL_value(crls, i);
@@ -962,7 +953,6 @@ xmlSecOpenSSLX509VerifyCertAgainstCrls(STACK_OF(X509_CRL) *crls, X509* cert) {
             continue;
         }
 
-        issuer = X509_CRL_get_issuer(crl);
         if(xmlSecOpenSSLX509NamesCompare(X509_CRL_get_issuer(crl), issuer) == 0) {
             break;
         }
@@ -987,7 +977,7 @@ xmlSecOpenSSLX509VerifyCertAgainstCrls(STACK_OF(X509_CRL) *crls, X509* cert) {
     n = sk_X509_REVOKED_num(X509_CRL_get_REVOKED(crl));
     for (i = 0; i < n; i++) {
         revoked = sk_X509_REVOKED_value(X509_CRL_get_REVOKED(crl), i);
-        if (ASN1_INTEGER_cmp(revoked->serialNumber, X509_get_serialNumber(cert)) == 0) {
+        if (ASN1_INTEGER_cmp(X509_REVOKED_get0_serialNumber(revoked), X509_get_serialNumber(cert)) == 0) {
             xmlSecError(XMLSEC_ERRORS_HERE,
                         NULL,
                         NULL,
@@ -1175,21 +1165,47 @@ xmlSecOpenSSLX509NameStringRead(xmlSecByte **str, int *strLen,
     return((ingoreTrailingSpaces) ? nonSpace - res + 1 : q - res);
 }
 
+/**
+ * This function DOES NOT create duplicates for X509_NAME_ENTRY objects!
+ */
+static STACK_OF(X509_NAME_ENTRY)*
+xmlSecOpenSSLX509_NAME_ENTRIES_copy(X509_NAME * a) {
+    STACK_OF(X509_NAME_ENTRY) * res = NULL;
+    int ii;
+
+    res = sk_X509_NAME_ENTRY_new(xmlSecOpenSSLX509_NAME_ENTRY_cmp);
+    if(res == NULL) {
+        xmlSecError(XMLSEC_ERRORS_HERE,
+                    NULL,
+                    "sk_X509_NAME_ENTRY_new",
+                    XMLSEC_ERRORS_R_CRYPTO_FAILED,
+                    XMLSEC_ERRORS_NO_MESSAGE);
+        return(NULL);
+    }
+
+    for (ii = X509_NAME_entry_count(a) - 1; ii >= 0; --ii) {
+        sk_X509_NAME_ENTRY_push(res, X509_NAME_get_entry(a, ii));
+    }
+
+    return (res);
+}
+
 static
-int xmlSecOpenSSLX509_NAME_cmp(const X509_NAME * a, const X509_NAME * b) {
-    int i,ret;
-    const X509_NAME_ENTRY *na,*nb;
+int xmlSecOpenSSLX509_NAME_ENTRIES_cmp(STACK_OF(X509_NAME_ENTRY)* a,  STACK_OF(X509_NAME_ENTRY)* b) {
+    const X509_NAME_ENTRY *na;
+    const X509_NAME_ENTRY *nb;
+    int ii, ret;
 
     xmlSecAssert2(a != NULL, -1);
     xmlSecAssert2(b != NULL, 1);
 
-    if (sk_X509_NAME_ENTRY_num(a->entries) != sk_X509_NAME_ENTRY_num(b->entries)) {
-        return sk_X509_NAME_ENTRY_num(a->entries) - sk_X509_NAME_ENTRY_num(b->entries);
+    if (sk_X509_NAME_ENTRY_num(a) != sk_X509_NAME_ENTRY_num(b)) {
+        return sk_X509_NAME_ENTRY_num(a) - sk_X509_NAME_ENTRY_num(b);
     }
 
-    for (i=sk_X509_NAME_ENTRY_num(a->entries)-1; i>=0; i--) {
-        na=sk_X509_NAME_ENTRY_value(a->entries,i);
-        nb=sk_X509_NAME_ENTRY_value(b->entries,i);
+    for (ii = sk_X509_NAME_ENTRY_num(a) - 1; ii >= 0; --ii) {
+        na = sk_X509_NAME_ENTRY_value(a, ii);
+        nb = sk_X509_NAME_ENTRY_value(b, ii);
 
         ret = xmlSecOpenSSLX509_NAME_ENTRY_cmp(&na, &nb);
         if(ret != 0) {
@@ -1209,49 +1225,52 @@ int xmlSecOpenSSLX509_NAME_cmp(const X509_NAME * a, const X509_NAME * b) {
  */
 static int
 xmlSecOpenSSLX509NamesCompare(X509_NAME *a, X509_NAME *b) {
-    X509_NAME *a1 = NULL;
-    X509_NAME *b1 = NULL;
+    STACK_OF(X509_NAME_ENTRY) *a1 = NULL;
+    STACK_OF(X509_NAME_ENTRY) *b1 = NULL;
     int ret;
 
     xmlSecAssert2(a != NULL, -1);
     xmlSecAssert2(b != NULL, 1);
 
-    a1 = X509_NAME_dup(a);
+    a1 = xmlSecOpenSSLX509_NAME_ENTRIES_copy(a);
     if(a1 == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
-                    "X509_NAME_dup",
-                    XMLSEC_ERRORS_R_CRYPTO_FAILED,
+                    "xmlSecOpenSSLX509_NAME_ENTRIES_copy",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
-    b1 = X509_NAME_dup(b);
+    b1 = xmlSecOpenSSLX509_NAME_ENTRIES_copy(b);
     if(b1 == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
-                    "X509_NAME_dup",
-                    XMLSEC_ERRORS_R_CRYPTO_FAILED,
+                    "xmlSecOpenSSLX509_NAME_ENTRIES_copy",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
                     XMLSEC_ERRORS_NO_MESSAGE);
+        sk_X509_NAME_ENTRY_free(a1);
         return(1);
     }
 
     /* sort both */
-    (void)sk_X509_NAME_ENTRY_set_cmp_func(a1->entries, xmlSecOpenSSLX509_NAME_ENTRY_cmp);
-    sk_X509_NAME_ENTRY_sort(a1->entries);
-    (void)sk_X509_NAME_ENTRY_set_cmp_func(b1->entries, xmlSecOpenSSLX509_NAME_ENTRY_cmp);
-    sk_X509_NAME_ENTRY_sort(b1->entries);
+    (void)sk_X509_NAME_ENTRY_set_cmp_func(a1, xmlSecOpenSSLX509_NAME_ENTRY_cmp);
+    sk_X509_NAME_ENTRY_sort(a1);
+    (void)sk_X509_NAME_ENTRY_set_cmp_func(b1, xmlSecOpenSSLX509_NAME_ENTRY_cmp);
+    sk_X509_NAME_ENTRY_sort(b1);
 
     /* actually compare */
-    ret = xmlSecOpenSSLX509_NAME_cmp(a1, b1);
+    ret = xmlSecOpenSSLX509_NAME_ENTRIES_cmp(a1, b1);
 
     /* cleanup */
-    X509_NAME_free(a1);
-    X509_NAME_free(b1);
+    sk_X509_NAME_ENTRY_free(a1);
+    sk_X509_NAME_ENTRY_free(b1);
     return(ret);
 }
 
 static int
 xmlSecOpenSSLX509_NAME_ENTRY_cmp(const X509_NAME_ENTRY * const *a, const X509_NAME_ENTRY * const *b) {
+    ASN1_STRING *a_value, *b_value;
+    ASN1_OBJECT *a_name,  *b_name;
     int ret;
 
     xmlSecAssert2(a != NULL, -1);
@@ -1259,27 +1278,44 @@ xmlSecOpenSSLX509_NAME_ENTRY_cmp(const X509_NAME_ENTRY * const *a, const X509_NA
     xmlSecAssert2((*a) != NULL, -1);
     xmlSecAssert2((*b) != NULL, 1);
 
+
     /* first compare values */
-    if(((*a)->value == NULL) && ((*b)->value != NULL)) {
+    a_value = X509_NAME_ENTRY_get_data((X509_NAME_ENTRY*)(*a));
+    b_value = X509_NAME_ENTRY_get_data((X509_NAME_ENTRY*)(*b));
+
+    if((a_value == NULL) && (b_value != NULL)) {
         return(-1);
-    } else if(((*a)->value != NULL) && ((*b)->value == NULL)) {
+    } else if((a_value != NULL) && (b_value == NULL)) {
         return(1);
-    } else if(((*a)->value == NULL) && ((*b)->value == NULL)) {
+    } else if((a_value == NULL) && (b_value == NULL)) {
         return(0);
     }
 
-    ret = (*a)->value->length - (*b)->value->length;
+    ret = ASN1_STRING_length(a_value) - ASN1_STRING_length(b_value);
     if(ret != 0) {
         return(ret);
     }
 
-    ret = memcmp((*a)->value->data, (*b)->value->data, (*a)->value->length);
-    if(ret != 0) {
-        return(ret);
+    if(ASN1_STRING_length(a_value) > 0) {
+        ret = memcmp(ASN1_STRING_data(a_value), ASN1_STRING_data(b_value), ASN1_STRING_length(a_value));
+        if(ret != 0) {
+            return(ret);
+        }
     }
 
     /* next compare names */
-    return(OBJ_cmp((*a)->object, (*b)->object));
+    a_name = X509_NAME_ENTRY_get_object((X509_NAME_ENTRY*)(*a));
+    b_name = X509_NAME_ENTRY_get_object((X509_NAME_ENTRY*)(*b));
+
+    if((a_name == NULL) && (b_name != NULL)) {
+        return(-1);
+    } else if((a_name != NULL) && (b_name == NULL)) {
+        return(1);
+    } else if((a_name == NULL) && (b_name == NULL)) {
+        return(0);
+    }
+
+    return(OBJ_cmp(a_name, b_name));
 }
 
 

@@ -36,8 +36,31 @@
 .navigation .title {
     font-size: 200%;
 }</style>
+<style type="text/css">
+table.CALSTABLE > tbody > tr:nth-child(1) > td:nth-child(1) {
+    width: 20em;
+}
+.synopsis, .classsynopsis {
+    background: #eeeeee;
+    border: solid 1px #aaaaaa;
+}
+.programlisting {
+    background: #eeeeee;
+    border: solid 1px #000000;
+}
+.navigation {
+    background: #eeeeee;
+    border: solid 1px #000000;
+}
+.navigation a {
+    color: initial;
+}
+.navigation a:visited {
+    color: initial;
+}
+</style>
 </head>
-<body><table witdh="100%" valign="top"><tr valign="top">
+<body><table width="100%" valign="top"><tr valign="top">
 <td valign="top" align="left" width="210">
 <img src="../images/logo.gif" alt="XML Security Library" border="0"><p></p>
 <ul>
@@ -78,11 +101,11 @@
 </td>
 <td valign="top"><table width="100%" valign="top"><tr><td valign="top" align="left" id="xmlsecContent">
 <table width="100%" class="navigation" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
-<td><a accesskey="p" href="xmlsec-examples.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="xmlsec-examples.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<td><a accesskey="p" href="xmlsec-examples.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="xmlsec-examples.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <th width="100%" align="center">XML Security Library Reference Manual</th>
-<td><a accesskey="n" href="xmlsec-examples-sign-dynamimc-template.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="xmlsec-examples-sign-dynamimc-template.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <br clear="all"><div class="SECT1">
 <h1 class="SECT1"><a name="XMLSEC-EXAMPLES-SIGN-TEMPLATE-FILE">Signing a template file.</a></h1>
@@ -91,7 +114,7 @@
 <p></p>
 <div class="INFORMALEXAMPLE">
 <p></p>
-<a name="AEN650"></a><pre class="PROGRAMLISTING">/** 
+<a name="AEN795"></a><pre class="PROGRAMLISTING">/** 
  * XML Security Library example: Signing a template file.
  * 
  * Signs a template file using a key from PEM file
@@ -108,7 +131,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  * 
- * Copyright (C) 2002-2003 Aleksey Sanin &lt;aleksey@aleksey.com&gt;
+ * Copyright (C) 2002-2016 Aleksey Sanin &lt;aleksey@aleksey.com&gt;
  */
 #include &lt;stdlib.h&gt;
 #include &lt;string.h&gt;
@@ -310,7 +333,7 @@ done:
 <p></p>
 <div class="INFORMALEXAMPLE">
 <p></p>
-<a name="AEN655"></a><pre class="PROGRAMLISTING">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<a name="AEN800"></a><pre class="PROGRAMLISTING">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!-- 
 XML Security Library example: Simple signature template file for sign1 example. 
 --&gt;
@@ -344,9 +367,9 @@ XML Security Library example: Simple signature template file for sign1 example.
 <p></p>
 <div class="INFORMALEXAMPLE">
 <p></p>
-<a name="AEN660"></a><pre class="PROGRAMLISTING">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<a name="AEN805"></a><pre class="PROGRAMLISTING">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!-- 
-XML Security Library example: Signed file (sign1 example). 
+XML Security Library example: Simple signature template file for sign1 example. 
 --&gt;
 &lt;Envelope xmlns="urn:envelope"&gt;
   &lt;Data&gt;
@@ -364,12 +387,8 @@ XML Security Library example: Signed file (sign1 example).
         &lt;DigestValue&gt;9H/rQr2Axe9hYTV2n/tCp+3UIQQ=&lt;/DigestValue&gt;
       &lt;/Reference&gt;
     &lt;/SignedInfo&gt;
-    &lt;SignatureValue&gt;Mx4psIy9/UY+u8QBJRDrwQWKRaCGz0WOVftyDzAe6WHAFSjMNr7qb2ojq9kdipT8
-Oub5q2OQ7mzdSLiiejkrO1VeqM/90yEIGI4En6KEB6ArEzw+iq4N1wm6EptcyxXx
-M9StAOOa9ilWYqR9Tfx3SW1urUIuKYgUitxsONiUHBVaW6HeX51bsXoTF++4ZI+D
-jiPBjN4HHmr0cbJ6BXk91S27ffZIfp1Qj5nL9onFLUGbR6EFgu2luiRzQbPuM2tP
-XxyI7GZ8AfHnRJK28ARvBC9oi+O1ej20S79CIV7gdBxbLbFprozBHAwOEC57YgJc
-x+YEjSjcO7SBIR1FiUA7pw==&lt;/SignatureValue&gt;
+    &lt;SignatureValue&gt;fDKK0so/zFcmmq2X+BaVFmS0t8KB7tyW53YN6n221OArzGCs4OyWsAjj/BUR+wNF
+elOnt4fo2gPK1a3IVEhMGg==&lt;/SignatureValue&gt;
     &lt;KeyInfo&gt;
 	&lt;KeyName&gt;rsakey.pem&lt;/KeyName&gt;
     &lt;/KeyInfo&gt;

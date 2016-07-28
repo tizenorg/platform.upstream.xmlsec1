@@ -7,7 +7,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -65,7 +65,7 @@ xmlSecEncCtxCreate(xmlSecKeysMngrPtr keysMngr) {
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecEncCtx)=%d",
-                    sizeof(xmlSecEncCtx));
+                    (int)sizeof(xmlSecEncCtx));
         return(NULL);
     }
 
@@ -1218,9 +1218,9 @@ xmlSecEncCtxDebugDump(xmlSecEncCtxPtr encCtx, FILE* output) {
        (encCtx->resultBase64Encoded != 0)) {
 
         fprintf(output, "== Result - start buffer:\n");
-        fwrite(xmlSecBufferGetData(encCtx->result),
-               xmlSecBufferGetSize(encCtx->result), 1,
-               output);
+        (void)fwrite(xmlSecBufferGetData(encCtx->result),
+                     xmlSecBufferGetSize(encCtx->result), 1,
+                     output);
         fprintf(output, "\n== Result - end buffer\n");
     }
 }
@@ -1311,9 +1311,9 @@ xmlSecEncCtxDebugXmlDump(xmlSecEncCtxPtr encCtx, FILE* output) {
        (encCtx->resultBase64Encoded != 0)) {
 
         fprintf(output, "<Result>");
-        fwrite(xmlSecBufferGetData(encCtx->result),
-               xmlSecBufferGetSize(encCtx->result), 1,
-               output);
+        (void)fwrite(xmlSecBufferGetData(encCtx->result),
+                     xmlSecBufferGetSize(encCtx->result), 1,
+                     output);
         fprintf(output, "</Result>\n");
     }
 

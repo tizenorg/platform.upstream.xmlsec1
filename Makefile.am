@@ -1,9 +1,9 @@
 NULL =
 
 SAFE_VERSION	= @XMLSEC_VERSION_SAFE@
-SUBDIRS 	= include src apps man docs
-TEST_APP 	= apps/xmlsec1$(EXEEXT)
-DEFAULT_CRYPTO	= @XMLSEC_CRYPTO@
+SUBDIRS 	    = include src apps man docs
+TEST_APP 	    = apps/xmlsec1$(EXEEXT)
+DEFAULT_CRYPTO	= @XMLSEC_DEFAULT_CRYPTO@
 
 bin_SCRIPTS 	= xmlsec1-config
 pkgconfig_DATA 	= xmlsec1.pc @XMLSEC_CRYPTO_PC_FILES_LIST@
@@ -88,31 +88,35 @@ docs-man:
 check: check-all check-info
 
 check-all: $(TEST_APP) 
-	@($(PRECHECK_COMMANDS) && \
 	for crypto in $(CHECK_CRYPTO_LIST) ; do \
-	    echo "=================== Checking xmlsec-$$crypto =================================" && \
-	    $(SHELL) ./tests/testrun.sh \
-	        $(ABS_SRCDIR)/tests/testKeys.sh \
-	        $$crypto \
-	        $(ABS_SRCDIR)/tests \
-	        $(ABS_BUILDDIR)/$(TEST_APP) der \
-	    && \
-	    $(SHELL) ./tests/testrun.sh \
-	        $(ABS_SRCDIR)/tests/testDSig.sh \
-	        $$crypto \
-	        $(ABS_SRCDIR)/tests \
-	        $(ABS_BUILDDIR)/$(TEST_APP) \
-	        der \
-	    && \
-	    $(SHELL) ./tests/testrun.sh \
-	        $(ABS_SRCDIR)/tests/testEnc.sh \
-	        $$crypto \
-	        $(ABS_SRCDIR)/tests \
-	        $(ABS_BUILDDIR)/$(TEST_APP) \
-	        der \
-	    ; \
-	done; )
+		make check-crypto-$$crypto ; \
+	done
 
+check-crypto-%: $(TEST_APP) 
+	@($(PRECHECK_COMMANDS) && \
+    echo "=================== Checking xmlsec-$* =================================" && \
+    $(SHELL) ./tests/testrun.sh \
+        $(ABS_SRCDIR)/tests/testKeys.sh \
+        $* \
+        $(ABS_SRCDIR)/tests \
+        $(ABS_BUILDDIR)/$(TEST_APP) der \
+    && \
+    $(SHELL) ./tests/testrun.sh \
+        $(ABS_SRCDIR)/tests/testDSig.sh \
+        $* \
+        $(ABS_SRCDIR)/tests \
+        $(ABS_BUILDDIR)/$(TEST_APP) \
+        der \
+    && \
+    $(SHELL) ./tests/testrun.sh \
+        $(ABS_SRCDIR)/tests/testEnc.sh \
+        $* \
+        $(ABS_SRCDIR)/tests \
+        $(ABS_BUILDDIR)/$(TEST_APP) \
+        der \
+    ; \
+	)
+	
 check-info:
 	@echo "---------------------------- ATTENTION -----------------------------------"
 	@echo "--- Some of the tests use resources located on external HTTP servers.  ---"
@@ -150,20 +154,13 @@ check-enc: $(TEST_APP)
 	    der \
 	)
 
-check-xkms: $(TEST_APP) 	
-	@($(PRECHECK_COMMANDS) && \
-	$(SHELL) ./tests/testrun.sh \
-	    $(ABS_SRCDIR)/tests/testXKMS.sh \
-	    $(DEFAULT_CRYPTO) \
-	    $(ABS_SRCDIR)/tests \
-	    $(ABS_BUILDDIR)/$(TEST_APP) \
-	    der \
-	)
-
 memcheck-res:
 	@grep -i 'ERROR SUMMARY' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
 	@grep -i 'in use at exit' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
-	@grep -i 'total heap usage' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
+	@grep -i 'definitely lost:' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
+	@grep -i 'indirectly lost:' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
+	@grep -i 'possibly lost:' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
+	@grep -i 'still reachable:' /tmp/*.log | sed 's/.*==.*== *//' | sort -u
 
 memcheck: $(TEST_APP)
 	@(export DEBUG_MEMORY=1 && $(MAKE) check && $(MAKE) memcheck-res)

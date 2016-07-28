@@ -4,7 +4,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -19,6 +19,7 @@
 #include <openssl/pem.h>
 #include <openssl/pkcs12.h>
 #include <openssl/conf.h>
+#include <openssl/engine.h>
 
 #include <xmlsec/xmlsec.h>
 #include <xmlsec/keys.h>
@@ -96,6 +97,7 @@ xmlSecOpenSSLAppInit(const char* config) {
 int
 xmlSecOpenSSLAppShutdown(void) {
     xmlSecOpenSSLAppSaveRANDFile(NULL);
+
     RAND_cleanup();
     EVP_cleanup();
 
@@ -103,14 +105,21 @@ xmlSecOpenSSLAppShutdown(void) {
     X509_TRUST_cleanup();
 #endif /* XMLSEC_NO_X509 */
 
-#ifndef XMLSEC_OPENSSL_096
+    ENGINE_cleanup();
+    CONF_modules_unload(1);
+
     CRYPTO_cleanup_all_ex_data();
-#endif /* XMLSEC_OPENSSL_096 */
 
     /* finally cleanup errors */
+#if defined(XMLSEC_OPENSSL_100) || defined(XMLSEC_OPENSSL_110)
+    ERR_remove_thread_state(NULL);
+#else
     ERR_remove_state(0);
+#endif /* defined(XMLSEC_OPENSSL_100) || defined(XMLSEC_OPENSSL_110) */
+
     ERR_free_strings();
 
+    /* done */
     return(0);
 }
 
@@ -255,7 +264,7 @@ xmlSecOpenSSLAppKeyLoadBIO(BIO* bio, xmlSecKeyDataFormat format,
         }
         if(pKey == NULL) {
             /* go to start of the file and try to read public key */
-            BIO_reset(bio);
+            (void)BIO_reset(bio);
             pKey = PEM_read_bio_PUBKEY(bio, NULL,
                             XMLSEC_PTR_TO_FUNC(pem_password_cb, pwdCallback),
                             pwdCallbackCtx);
@@ -274,7 +283,7 @@ xmlSecOpenSSLAppKeyLoadBIO(BIO* bio, xmlSecKeyDataFormat format,
         pKey = d2i_PrivateKey_bio(bio, NULL);
         if(pKey == NULL) {
             /* go to start of the file and try to read public key */
-            BIO_reset(bio);
+            (void)BIO_reset(bio);
             pKey = d2i_PUBKEY_bio(bio, NULL);
             if(pKey == NULL) {
                 xmlSecError(XMLSEC_ERRORS_HERE,

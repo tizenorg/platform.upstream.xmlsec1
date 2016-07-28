@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -67,7 +67,7 @@ xmlSecBufferCreate(xmlSecSize size) {
                     NULL,
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
-                    "sizeof(xmlSecBuffer)=%d", sizeof(xmlSecBuffer));
+                    "sizeof(xmlSecBuffer)=%d", (int)sizeof(xmlSecBuffer));
         return(NULL);
     }
 

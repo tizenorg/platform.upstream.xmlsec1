@@ -13,17 +13,17 @@
  *      verify4 <signed-file> <trusted-cert-pem-file1> [<trusted-cert-pem-file2> [...]]
  *
  * Example (sucecess):
- *      ./verify4 verify4-res.xml rootcert.pem
+ *      ./verify4 verify4-res.xml ca2cert.pem cacert.pem
  *
  * Example (failure):
- *      ./verify4 verify4-bad-res.xml rootcert.pem
+ *      ./verify4 verify4-bad-res.xml ca2cert.pem cacert.pem
  * In the same time, verify3 example successfuly verifies this signature:
- *      ./verify3 verify4-bad-res.xml rootcert.pem
+ *      ./verify3 verify4-bad-res.xml ca2cert.pem cacert.pem
  *
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  * 
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -100,7 +100,7 @@ main(int argc, char **argv) {
      * xmlsec-crypto library.
      */
 #ifdef XMLSEC_CRYPTO_DYNAMIC_LOADING
-    if(xmlSecCryptoDLLoadLibrary(BAD_CAST XMLSEC_CRYPTO) < 0) {
+    if(xmlSecCryptoDLLoadLibrary(NULL) < 0) {
         fprintf(stderr, "Error: unable to load default xmlsec-crypto library. Make sure\n"
                         "that you have it installed and check shared libraries path\n"
                         "(LD_LIBRARY_PATH) envornment variable.\n");

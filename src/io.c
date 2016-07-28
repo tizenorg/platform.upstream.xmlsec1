@@ -6,7 +6,7 @@
  * This is free software; see Copyright file in the source
  * distribution for preciese wording.
  *
- * Copyright (C) 2002-2003 Aleksey Sanin <aleksey@aleksey.com>
+ * Copyright (C) 2002-2016 Aleksey Sanin <aleksey@aleksey.com>. All Rights Reserved.
  */
 #include "globals.h"
 
@@ -66,7 +66,7 @@ xmlSecIOCallbackCreate(xmlInputMatchCallback matchFunc, xmlInputOpenCallback ope
                     NULL,
                     XMLSEC_ERRORS_R_MALLOC_FAILED,
                     "sizeof(xmlSecIOCallback)=%d",
-                    sizeof(xmlSecIOCallback));
+                    (int)sizeof(xmlSecIOCallback));
         return(NULL);
     }
     memset(callbacks, 0, sizeof(xmlSecIOCallback));
@@ -433,6 +433,35 @@ xmlSecTransformInputURIOpen(xmlSecTransformPtr transform, const xmlChar *uri) {
     return(0);
 }
 
+
+/**
+ * xmlSecTransformInputURIClose:
+ * @transform:          the pointer to IO transform.
+ *
+ * Closes the given @transform and frees up resourses.
+ *
+ * Returns: 0 on success or a negative value otherwise.
+ */
+int
+xmlSecTransformInputURIClose(xmlSecTransformPtr transform) {
+    xmlSecInputURICtxPtr ctx;
+
+    xmlSecAssert2(xmlSecTransformCheckId(transform, xmlSecTransformInputURIId), -1);
+
+    ctx = xmlSecTransformInputUriGetCtx(transform);
+    xmlSecAssert2(ctx != NULL, -1);
+
+    /* close if still open and mark as closed */
+    if((ctx->clbksCtx != NULL) && (ctx->clbks != NULL) && (ctx->clbks->closecallback != NULL)) {
+    	(ctx->clbks->closecallback)(ctx->clbksCtx);
+    	ctx->clbksCtx = NULL;
+    	ctx->clbks = NULL;
+    }
+
+    /* done */
+    return(0);
+}
+
 static int
 xmlSecTransformInputURIInitialize(xmlSecTransformPtr transform) {
     xmlSecInputURICtxPtr ctx;
@@ -448,17 +477,27 @@ xmlSecTransformInputURIInitialize(xmlSecTransformPtr transform) {
 
 static void
 xmlSecTransformInputURIFinalize(xmlSecTransformPtr transform) {
-    xmlSecInputURICtxPtr ctx;
+	xmlSecInputURICtxPtr ctx;
+	int ret;
 
     xmlSecAssert(xmlSecTransformCheckId(transform, xmlSecTransformInputURIId));
 
     ctx = xmlSecTransformInputUriGetCtx(transform);
     xmlSecAssert(ctx != NULL);
 
-    if((ctx->clbksCtx != NULL) && (ctx->clbks != NULL) && (ctx->clbks->closecallback != NULL)) {
-        (ctx->clbks->closecallback)(ctx->clbksCtx);
-    }
+    ret = xmlSecTransformInputURIClose(transform);
+    if(ret < 0) {
+		xmlSecError(XMLSEC_ERRORS_HERE,
+					xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
+					"xmlSecTransformInputURIClose",
+					XMLSEC_ERRORS_R_XMLSEC_FAILED,
+					"ret=%d", ret);
+		/* ignore the error */
+		/* return; */
+	}
+
     memset(ctx, 0, sizeof(xmlSecInputURICtx));
+    return;
 }
 
 static int
