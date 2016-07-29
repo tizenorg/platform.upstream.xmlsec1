@@ -1660,12 +1660,12 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
         sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
         logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
         xmlSecError(XMLSEC_ERRORS_HERE,
-                NULL,
-                "xmlSecTransformCtxExecute",
-                XMLSEC_ERRORS_R_XMLSEC_FAILED,
-                logMsg);
+                    NULL,
+                    "xmlSecTransformCtxExecute",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    logMsg);
         return(-1);
-    }    
+    }
     dsigRefCtx->result = transformCtx->result;
 
     if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {
@@ -1680,23 +1680,23 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
 
         /* write signed data to xml */
         xmlNodeSetContentLen(digestValueNode,
-                xmlSecBufferGetData(dsigRefCtx->result),
-                xmlSecBufferGetSize(dsigRefCtx->result));
+                             xmlSecBufferGetData(dsigRefCtx->result),
+                             xmlSecBufferGetSize(dsigRefCtx->result));
 
         /* set success status and we are done */
         dsigRefCtx->status = xmlSecDSigStatusSucceeded;
     } else {
         /* verify SignatureValue node content */
-        ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod, 
-                digestValueNode, transformCtx);
+        ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod,
+                                               digestValueNode, transformCtx);
         if(ret < 0) {
             sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
             logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
             xmlSecError(XMLSEC_ERRORS_HERE,
-                    NULL,
-                    "xmlSecTransformVerifyNodeContent",
-                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-                    logMsg);
+                        NULL,
+                        "xmlSecTransformVerifyNodeContent",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        logMsg);
             return(-1);
         }
 

@@ -154,7 +154,7 @@ typedef enum {
  */
 #define XMLSEC_KEYINFO_FLAGS_X509DATA_SKIP_STRICT_CHECKS        0x00004000
 
-/** 
+/**
  * XMLSEC_KEYINFO_FLAGS_SKIP_VERIFY_CHAIN:
  *
  * If the flag is set then we wont stop document validation

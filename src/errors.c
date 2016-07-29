@@ -221,9 +221,9 @@ xmlSecErrorsGetMsg(xmlSecSize pos) {
  * function.
  */
 void
-xmlSecError(const char* file, int line, const char* func, 
-        const char* errorObject, const char* errorSubject,
-        int reason, const char* msg, ...) {
+xmlSecError(const char* file, int line, const char* func,
+            const char* errorObject, const char* errorSubject,
+            int reason, const char* msg, ...) {
 
     if(xmlSecErrorsClbk != NULL) {
         xmlChar error_msg[XMLSEC_ERRORS_BUFFER_SIZE] = {'\0',};
@@ -253,6 +253,6 @@ xmlSecError(const char* file, int line, const char* func,
         } else {
             error_msg[0] = '\0';
         }
-
-        xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);      }
+        xmlSecErrorsClbk(file, line, func, errorObject, errorSubject, reason, (char*)error_msg);
+    }
 }
