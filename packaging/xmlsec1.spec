@@ -98,8 +98,7 @@ cp %{SOURCE1001} .
 
 %files
 %manifest %{name}.manifest
-%license COPYING
-%doc Copyright
+%license Copyright
 %{_libdir}/libxmlsec1.so.*
 %{_bindir}/xmlsec1
 
