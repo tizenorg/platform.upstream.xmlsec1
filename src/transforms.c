@@ -925,7 +925,7 @@ xmlSecTransformCtxSetUri(xmlSecTransformCtxPtr ctx, const xmlChar* uri, xmlNodeP
                         "size=%d", size);
             return(-1);
         }
-        sprintf((char*)buf, tmpl, xptr + 1);
+        snprintf((char*)buf, size * sizeof(xmlChar), tmpl, xptr + 1);
         xptr = buf;
         nodeSetType = xmlSecNodeSetTreeWithoutComments;
     }

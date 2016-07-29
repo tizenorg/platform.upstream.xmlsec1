@@ -605,8 +605,9 @@ xmlSecTransformXPathNodeRead(xmlSecTransformPtr transform, xmlNodePtr node, xmlS
 
     /* create full XPath expression */
     xmlSecAssert2(data->expr != NULL, -1);
-    tmp = (xmlChar*) xmlMalloc(sizeof(xmlChar) * (xmlStrlen(data->expr) +
-                                                  strlen(xpathPattern) + 1));
+    int tmpSize = sizeof(xmlChar) * (xmlStrlen(data->expr) +
+                                     strlen(xpathPattern) + 1);
+    tmp = (xmlChar*) xmlMalloc(tmpSize);
     if(tmp == NULL) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
@@ -616,7 +617,7 @@ xmlSecTransformXPathNodeRead(xmlSecTransformPtr transform, xmlNodePtr node, xmlS
                     (int)(xmlStrlen(data->expr) + strlen(xpathPattern) + 1));
         return(-1);
     }
-    sprintf((char*)tmp, xpathPattern, (char*)data->expr);
+    snprintf((char*)tmp, tmpSize, xpathPattern, (char*)data->expr);
     xmlFree(data->expr);
     data->expr = tmp;
 

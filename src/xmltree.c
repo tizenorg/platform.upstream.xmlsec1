@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include <errno.h>
 
 #include <libxml/tree.h>
@@ -793,8 +794,9 @@ xmlSecGenerateID(const xmlChar* prefix, xmlSecSize len) {
     xmlSecAssert2(xmlSecBufferGetSize(&buffer) == binLen, NULL);
 
     /* create random bytes */
+    unsigned int seed = time(NULL);
     for(i = 0; i < binLen; i++) {
-        (xmlSecBufferGetData(&buffer)) [i] = (xmlSecByte) (256.0 * rand() / (RAND_MAX + 1.0));
+        (xmlSecBufferGetData(&buffer)) [i] = (xmlSecByte) (256.0 * rand_r(&seed) / (RAND_MAX + 1.0));
     }
 
     /* base64 encode random bytes */

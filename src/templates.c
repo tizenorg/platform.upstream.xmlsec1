@@ -1772,7 +1772,7 @@ xmlSecTmplTransformAddHmacOutputLength(xmlNodePtr transformNode, xmlSecSize bits
         return(-1);
     }
 
-    sprintf(buf, "%u", bitsLen);
+    snprintf(buf, sizeof(buf), "%u", bitsLen);
     xmlNodeSetContent(cur, BAD_CAST buf);
     return(0);
 }
