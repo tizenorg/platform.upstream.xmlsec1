@@ -1657,7 +1657,7 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     /* finally get transforms results */
     ret = xmlSecTransformCtxExecute(transformCtx, node->doc);
     if(ret < 0) {
-        sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
+        snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
         logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
@@ -1690,7 +1690,7 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
         ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod,
                                                digestValueNode, transformCtx);
         if(ret < 0) {
-            sprintf(logMsg, "uri:%s", (char*)dsigRefCtx->uri);
+            snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
             logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
             xmlSecError(XMLSEC_ERRORS_HERE,
                         NULL,

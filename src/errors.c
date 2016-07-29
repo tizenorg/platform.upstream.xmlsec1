@@ -236,7 +236,8 @@ xmlSecError(const char* file, int line, const char* func,
                 for(i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
                     if(xmlSecErrorsGetCode(i) == reason) {
                         e_msg = xmlSecErrorsGetMsg(i);
-                        sprintf(error_msg , "%s] [", e_msg);
+                        snprintf(error_msg, sizeof(xmlChar) * XMLSEC_ERRORS_BUFFER_SIZE ,
+                                 "%s] [", e_msg);
                         len = strlen(error_msg);
                         break;
                     }
