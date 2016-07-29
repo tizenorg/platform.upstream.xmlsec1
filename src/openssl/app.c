@@ -1631,7 +1631,7 @@ xmlSecOpenSSLDummyPasswordCallback(char *buf, int bufsize,
         return(-1);
     }
 
-    strcpy(buf, password);
+    strncpy(buf, password, strlen(password));
     return (strlen(buf));
 }
 
