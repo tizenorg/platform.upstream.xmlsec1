@@ -511,6 +511,7 @@ xmlSecDSigCtxProcessSignatureNode(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node) {
     /* read node data */
     xmlSecAssert2(dsigCtx->id == NULL, -1);
     dsigCtx->id = xmlGetProp(node, xmlSecAttrId);
+    xmlSecAssert2(dsigCtx->id != NULL, -1);
 
     /* first node is required SignedInfo */
     cur = xmlSecGetNextElementNode(node->children);
@@ -1521,6 +1522,9 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     dsigRefCtx->uri = xmlGetProp(node, xmlSecAttrURI);
     dsigRefCtx->id  = xmlGetProp(node, xmlSecAttrId);
     dsigRefCtx->type= xmlGetProp(node, xmlSecAttrType);
+    xmlSecAssert2(dsigRefCtx->uri != NULL, -1);
+    xmlSecAssert2(dsigRefCtx->id != NULL, -1);
+    xmlSecAssert2(dsigRefCtx->type != NULL, -1);
 
     /* set start URI (and check that it is enabled!) */
     ret = xmlSecTransformCtxSetUri(transformCtx, dsigRefCtx->uri, node);
@@ -1949,6 +1953,7 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
     /* read node data */
     xmlSecAssert2(dsigCtx->id == NULL, -1);
     dsigCtx->id = xmlGetProp(node, xmlSecAttrId);
+    xmlSecAssert2(dsigCtx->id != NULL, -1);
 
     /* first node is required SignedInfo */
     cur = xmlSecGetNextElementNode(node->children);
@@ -2333,6 +2338,7 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
 
     /* read attributes first */
     dsigRefCtx->uri = xmlGetProp(node, xmlSecAttrURI);
+    xmlSecAssert2(dsigRefCtx->uri != NULL, -1);
 
     while(pNextTmp[i] != NULL) {
         len =  strlen(pNextTmp[i]);
@@ -2352,6 +2358,8 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
 
     dsigRefCtx->id = xmlGetProp(node, xmlSecAttrId);
     dsigRefCtx->type= xmlGetProp(node, xmlSecAttrType);
+    xmlSecAssert2(dsigRefCtx->id != NULL, -1);
+    xmlSecAssert2(dsigRefCtx->type != NULL, -1);
 
     /* set start URI (and check that it is enabled!) */
     ret = xmlSecTransformCtxSetUri(transformCtx, dsigRefCtx->uri, node);
