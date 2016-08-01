@@ -2333,6 +2333,7 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
 
     /* read attributes first */
     dsigRefCtx->uri = xmlGetProp(node, xmlSecAttrURI);
+    xmlSecAssert2(dsigRefCtx->uri != NULL, -1);
 
     while(pNextTmp[i] != NULL) {
         len =  strlen(pNextTmp[i]);

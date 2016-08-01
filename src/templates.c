@@ -2065,7 +2065,7 @@ xmlSecTmplNodeWriteNsList(xmlNodePtr parentNode, const xmlChar** nsList) {
         } else {
             prefix = (*ptr);
         }
-        if((++ptr) == NULL) {
+        if(*(++ptr) == NULL) {
             xmlSecError(XMLSEC_ERRORS_HERE,
                         NULL,
                         NULL,
