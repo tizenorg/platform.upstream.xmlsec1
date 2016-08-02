@@ -59,12 +59,7 @@ static int      xmlSecDSigReferenceCtxProcessNodeEx     (xmlSecDSigReferenceCtxP
                                                          xmlNodePtr node, int noHash, void* pList);
 
 /* The ID attribute in XMLDSig is 'Id' */
-static const xmlChar*		xmlSecDSigIds[] = { xmlSecAttrId, NULL };
-
-
-#define _start //xmlSecError(XMLSEC_ERRORS_HERE, NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER," >> start ");
-#define _end //xmlSecError(XMLSEC_ERRORS_HERE, NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER," >> end ");
-static char logMsg[1024];
+static const xmlChar*      xmlSecDSigIds[] = { xmlSecAttrId, NULL };
 
 /**
  * xmlSecDSigCtxCreate:
@@ -1657,13 +1652,12 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     /* finally get transforms results */
     ret = xmlSecTransformCtxExecute(transformCtx, node->doc);
     if(ret < 0) {
-        snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
-        logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
         xmlSecError(XMLSEC_ERRORS_HERE,
                     NULL,
                     "xmlSecTransformCtxExecute",
                     XMLSEC_ERRORS_R_XMLSEC_FAILED,
-                    logMsg);
+                    "uri:%s",
+                    xmlSecErrorsSafeString(dsigRefCtx->uri));
         return(-1);
     }
     dsigRefCtx->result = transformCtx->result;
@@ -1671,32 +1665,31 @@ xmlSecDSigReferenceCtxProcessNode(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNodeP
     if(dsigRefCtx->dsigCtx->operation == xmlSecTransformOperationSign) {
         if((dsigRefCtx->result == NULL) || (xmlSecBufferGetData(dsigRefCtx->result) == NULL)) {
             xmlSecError(XMLSEC_ERRORS_HERE,
-                    NULL,
-                    "xmlSecTransformCtxExecute",
-                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
-                    XMLSEC_ERRORS_NO_MESSAGE);
+                        NULL,
+                        "xmlSecTransformCtxExecute",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        XMLSEC_ERRORS_NO_MESSAGE);
             return(-1);
         }
 
         /* write signed data to xml */
         xmlNodeSetContentLen(digestValueNode,
-                             xmlSecBufferGetData(dsigRefCtx->result),
-                             xmlSecBufferGetSize(dsigRefCtx->result));
+                            xmlSecBufferGetData(dsigRefCtx->result),
+                            xmlSecBufferGetSize(dsigRefCtx->result));
 
         /* set success status and we are done */
         dsigRefCtx->status = xmlSecDSigStatusSucceeded;
     } else {
         /* verify SignatureValue node content */
         ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod,
-                                               digestValueNode, transformCtx);
+                            digestValueNode, transformCtx);
         if(ret < 0) {
-            snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
-            logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
             xmlSecError(XMLSEC_ERRORS_HERE,
                         NULL,
                         "xmlSecTransformVerifyNodeContent",
                         XMLSEC_ERRORS_R_XMLSEC_FAILED,
-                        logMsg);
+                        "uri:%s",
+                        xmlSecErrorsSafeString(dsigRefCtx->uri));
             return(-1);
         }
 
@@ -1864,9 +1857,6 @@ xmlSecDSigCtxVerifyEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, int noHash, voi
     int ret;
     int len = 0;
 
-    if(noHash == 1)
-    _start
-
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(node != NULL, -1);
     xmlSecAssert2(node->doc != NULL, -1);
@@ -1914,7 +1904,6 @@ xmlSecDSigCtxVerifyEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, int noHash, voi
     } else {
         dsigCtx->status = xmlSecDSigStatusInvalid;
     }
-     _end
     return(0);
 }
 
@@ -1926,7 +1915,6 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
     xmlNodePtr cur;
     int ret;
 
-    _start
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2((dsigCtx->operation == xmlSecTransformOperationSign) ||
                   (dsigCtx->operation == xmlSecTransformOperationVerify), -1);
@@ -2099,7 +2087,6 @@ xmlSecDSigCtxProcessSignatureNodeEx (xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
         XMLSEC_ERRORS_NO_MESSAGE);
         return(-1);
     }
-    _end
     return(0);
 }
 
@@ -2109,7 +2096,6 @@ xmlSecDSigCtxProcessSignedInfoNodeEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
     xmlNodePtr cur;
     int ret = -1;
 
-    _start
     xmlSecAssert2(dsigCtx != NULL, -1);
     xmlSecAssert2(dsigCtx->status == xmlSecDSigStatusUnknown, -1);
     xmlSecAssert2(dsigCtx->signMethod == NULL, -1);
@@ -2293,7 +2279,6 @@ xmlSecDSigCtxProcessSignedInfoNodeEx(xmlSecDSigCtxPtr dsigCtx, xmlNodePtr node, 
         ret = -1;
         goto error;
      }
-    _end
 error:
     return(ret);
 }
@@ -2318,8 +2303,6 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
     xmlSecAssert2(node != NULL, -1);
     xmlSecAssert2(node->doc != NULL, -1);
 
-    _start
-
     transformCtx = &(dsigRefCtx->transformCtx);
 
     if(pList == NULL) {
@@ -2339,8 +2322,12 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
         len =  strlen(pNextTmp[i]);
         cmpResult = strncmp((const char *)dsigRefCtx->uri, (const char *)pNextTmp[i], len);
         if(cmpResult == 0) {
-            snprintf(logMsg, sizeof(logMsg), "uri: %s", (char*)pNextTmp[i]);
-            xmlSecError(XMLSEC_ERRORS_HERE, NULL, NULL, XMLSEC_ERRORS_MAX_NUMBER, logMsg);
+            xmlSecError(XMLSEC_ERRORS_HERE,
+                        NULL,
+                        NULL,
+                        XMLSEC_ERRORS_MAX_NUMBER,
+                        "uri: %s",
+                        xmlSecErrorsSafeString(pNextTmp[i]));
             break;
         }
         ++i;
@@ -2487,13 +2474,12 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
     /* finally get transforms results */
     ret = xmlSecTransformCtxExecute(transformCtx, node->doc);
     if(ret < 0) {
-        snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
-        logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
         xmlSecError(XMLSEC_ERRORS_HERE,
-        NULL,
-        "xmlSecTransformCtxExecute",
-        XMLSEC_ERRORS_R_XMLSEC_FAILED,
-        logMsg);
+                    NULL,
+                    "xmlSecTransformCtxExecute",
+                    XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                    "uri:%s",
+                    xmlSecErrorsSafeString(dsigRefCtx->uri));
         return(-1);
     }
 
@@ -2521,12 +2507,12 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
         ret = xmlSecTransformVerifyNodeContent(dsigRefCtx->digestMethod,
         digestValueNode, transformCtx);
         if(ret < 0) {
-            snprintf(logMsg, sizeof(logMsg), "uri:%s", (char*)dsigRefCtx->uri);
-            logMsg[strlen(dsigRefCtx->uri)+5] = '\0';
             xmlSecError(XMLSEC_ERRORS_HERE,
-            NULL,
-            "xmlSecTransformVerifyNodeContent",
-            XMLSEC_ERRORS_R_XMLSEC_FAILED, logMsg);
+                        NULL,
+                        "xmlSecTransformVerifyNodeContent",
+                        XMLSEC_ERRORS_R_XMLSEC_FAILED,
+                        "uri:%s",
+                        xmlSecErrorsSafeString(dsigRefCtx->uri));
             return(-1);
         }
 
@@ -2541,8 +2527,6 @@ xmlSecDSigReferenceCtxProcessNodeEx(xmlSecDSigReferenceCtxPtr dsigRefCtx, xmlNod
     if(dsigRefCtx->digestMethod->status == xmlSecTransformStatusOk) {
        dsigRefCtx->status = xmlSecDSigStatusSucceeded;
     }
-
-    _end
 
 partial:
     return(0);
