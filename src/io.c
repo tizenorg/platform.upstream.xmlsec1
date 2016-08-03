@@ -33,6 +33,8 @@
 #include <xmlsec/io.h>
 #include <xmlsec/errors.h>
 
+#define ERR_BUF_SIZE 1024
+
 /*******************************************************************
  *
  * Input I/O callback sets
@@ -419,14 +421,15 @@ xmlSecTransformInputURIOpen(xmlSecTransformPtr transform, const xmlChar *uri) {
         }
     }
 
+    char buf[ERR_BUF_SIZE];
     if((ctx->clbks == NULL) || (ctx->clbksCtx == NULL)) {
         xmlSecError(XMLSEC_ERRORS_HERE,
                     xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
                     "opencallback",
                     XMLSEC_ERRORS_R_IO_FAILED,
-                    "uri=%s;errno=%d",
+                    "uri=%s;error=%s",
                     xmlSecErrorsSafeString(uri),
-                    errno);
+                    strerror_r(errno, buf, sizeof(buf)));
         return(-1);
     }
 
@@ -519,11 +522,12 @@ xmlSecTransformInputURIPopBin(xmlSecTransformPtr transform, xmlSecByte* data,
     if((ctx->clbksCtx != NULL) && (ctx->clbks != NULL) && (ctx->clbks->readcallback != NULL)) {
         ret = (ctx->clbks->readcallback)(ctx->clbksCtx, (char*)data, (int)maxDataSize);
         if(ret < 0) {
+            char buf[ERR_BUF_SIZE];
             xmlSecError(XMLSEC_ERRORS_HERE,
                         xmlSecErrorsSafeString(xmlSecTransformGetName(transform)),
                         "readcallback",
                         XMLSEC_ERRORS_R_IO_FAILED,
-                        "errno=%d", errno);
+                        "error=%s", strerror_r(errno, buf, sizeof(buf)));
             return(-1);
         }
         (*dataSize) = ret;

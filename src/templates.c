@@ -1772,7 +1772,7 @@ xmlSecTmplTransformAddHmacOutputLength(xmlNodePtr transformNode, xmlSecSize bits
         return(-1);
     }
 
-    sprintf(buf, "%u", bitsLen);
+    snprintf(buf, sizeof(buf), "%u", bitsLen);
     xmlNodeSetContent(cur, BAD_CAST buf);
     return(0);
 }
@@ -2065,7 +2065,7 @@ xmlSecTmplNodeWriteNsList(xmlNodePtr parentNode, const xmlChar** nsList) {
         } else {
             prefix = (*ptr);
         }
-        if((++ptr) == NULL) {
+        if(*(++ptr) == NULL) {
             xmlSecError(XMLSEC_ERRORS_HERE,
                         NULL,
                         NULL,
